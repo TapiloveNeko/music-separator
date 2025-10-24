@@ -1,11 +1,11 @@
-# 曲から楽器を切り離す - Sound Extraction App
+# 曲から楽器を切り離す - Music Separator App
 
 AI搭載のアルゴリズムで音楽を分割して表示するWebアプリケーションです。
 
 ## 🎯 機能
 
 - 🎵 **音楽ファイルのアップロード**: MP3、WAV、FLAC、M4A、OGG形式に対応
-- 🤖 **AI楽器分離**: 現状はモック分離（軽量）。本番AI(Spleeter/Demucs)は後日差し替え可能
+- 🤖 **AI楽器分離**: Demucsを使用した高品質な楽器分離
 - 📊 **リアルタイム波形表示**: 各トラックの波形をリアルタイム表示
 - 🔊 **ボリューム制御**: 各トラックの個別ボリューム調整
 - ▶️ **再生制御**: 再生・停止・シーク機能
@@ -14,13 +14,12 @@ AI搭載のアルゴリズムで音楽を分割して表示するWebアプリケ
 - 📱 **レスポンシブデザイン**: モバイル対応
 
 ## 🏗️ アーキテクチャ
-
 ```
 music-separator/
 ├── frontend/                 # React + TypeScript フロントエンド
 │   ├── src/
 │   └── package.json
-├── backend/                  # Python + Flask バックエンド（モック分離）
+├── backend/                  # Python + Flask バックエンド
 │   ├── app.py
 │   └── requirements.txt
 ├── docker-compose.yml        # Compose (frontend/backend/nginx)
@@ -30,8 +29,7 @@ music-separator/
 
 ---
 
-# 🚀 新しいPCへの持ち込みとセットアップ手順
-別PCに `music-separator` フォルダをコピーした前提で、以下のどちらかを実施してください。
+# 🚀 ローカル開発環境のセットアップ
 
 ## 方法A（おすすめ）: Docker Compose で起動
 前提: Docker Desktop がインストール済みで CLI が使えること（`docker --version`, `docker compose version` で確認）
@@ -74,8 +72,8 @@ docker compose down
 
 詳細な手順は各ディレクトリのREADMEを参照してください：
 
-- **バックエンド**: `backend/README.md` を参照
-- **フロントエンド**: `frontend/README.md` を参照
+- **バックエンド**: [`backend/README.md`](backend/README.md) を参照
+- **フロントエンド**: [`frontend/README.md`](frontend/README.md) を参照
 
 ### 簡易起動手順
 
@@ -98,14 +96,14 @@ yarn start
 
 ## 動作確認フロー
 1) フロントにアクセス → mp3をアップロード
-2) 進捗表示 → 完了後、4トラック（音楽/ボーカル/ベース/ドラム）が表示
+2) 進捗表示 → 完了後、6トラック（vocals, drums, bass, guitar, piano, other）が表示
 3) 「保存」で各トラックのwavをダウンロード可能
 
 ## トラブルシューティング（共通）
 
 詳細なトラブルシューティングは各ディレクトリのREADMEを参照：
-- **バックエンド**: `backend/README.md` の「トラブルシューティング」セクション
-- **フロントエンド**: `frontend/README.md` の「トラブルシューティング」セクション
+- **バックエンド**: [`backend/README.md`](backend/README.md) の「トラブルシューティング」セクション
+- **フロントエンド**: [`frontend/README.md`](frontend/README.md) の「トラブルシューティング」セクション
 
 ### よくある問題
 
@@ -122,22 +120,91 @@ yarn start
   - Docker: `docker compose down -v && docker compose up --build -d`
   - ネイティブ: 各ディレクトリのREADMEを参照
 
-## 備考
-- 現在は「モック分離」を採用しているためGPU/TensorFlow不要で軽量に動作します。
-- 本格的なAI分離（Spleeter/Demucs）に切り替える際は、`backend/requirements.txt` と `backend/app.py` の分離ロジックを差し替えて再ビルドしてください。
+---
+
+# 🌐 本番環境へのデプロイ
+
+このアプリケーションは、フロントエンドとバックエンドを別々のサービスにデプロイできます。
+
+## デプロイ構成
+```
+静的サイトホスティング（フロントエンド）
+例: GitHub Pages, Netlify, Vercel
+         ↓ APIリクエスト
+コンテナホスティング（バックエンド）
+例: Hugging Face Spaces, Render, Railway, AWS
+```
+
+## デプロイ手順
+
+### 1. バックエンドのデプロイ
+
+お好みのコンテナホスティングサービスに `backend/` をデプロイしてください。
+
+**必要なファイル**:
+- `backend/app.py`
+- `backend/Dockerfile`
+- `backend/requirements.txt`
+
+**環境変数の設定**:
+- `PORT`: サービスが指定するポート（サービスにより異なる）
+
+**デプロイ後の確認**:
+```
+https://your-backend-url/health
+```
+
+詳細な手順は [`backend/README.md`](backend/README.md) の「本番環境へのデプロイ」セクションを参照してください。
+
+### 2. フロントエンドのデプロイ
+
+バックエンドのデプロイ完了後、フロントエンドをデプロイします。
+
+**1. 環境変数を設定**
+
+`frontend/.env.production` を作成・編集：
+```bash
+REACT_APP_API_URL=https://your-backend-url
+```
+
+**2. ビルド**
+```bash
+cd frontend
+yarn build
+```
+
+**3. デプロイ**
+
+お好みの静的サイトホスティングサービスに `frontend/build/` の内容をデプロイしてください。
+
+詳細な手順は [`frontend/README.md`](frontend/README.md) の「デプロイ」セクションを参照してください。
+
+## サポートされるサービス例
+
+| カテゴリ | サービス例 | 特徴 |
+|---------|-----------|------|
+| **静的サイト** | GitHub Pages | 無料、GitHub連携 |
+|  | Netlify | 自動ビルド、CDN |
+|  | Vercel | Next.js最適化 |
+| **コンテナ** | Hugging Face Spaces | AI/ML向け、無料枠あり |
+|  | Render | Docker対応、簡単 |
+|  | Railway | 従量課金、簡単 |
+|  | AWS/GCP | スケーラブル |
 
 ---
 
 ## 🛠️ 技術スタック
-フロント: React 18 / TypeScript / Styled Components / Axios
 
-バックエンド: Python 3.9+ / Flask / Librosa / Pydub（モック分離）
+**フロントエンド**: React 18 / TypeScript / Styled Components / Axios
 
-インフラ: Docker / Docker Compose / Nginx
+**バックエンド**: Python 3.9+ / Flask / Demucs / Librosa / PyTorch
+
+**インフラ**: Docker / Docker Compose / Nginx
 
 ---
 
 ## 📡 API エンドポイント
+
 | メソッド | エンドポイント | 説明 |
 |---------|---------------|------|
 | POST | `/upload` | 音声ファイルをアップロード（非同期処理開始） |
@@ -147,4 +214,4 @@ yarn start
 
 ---
 
-不明点があれば、このREADMEの手順番号と現在の状況（コマンド結果/ログ）を教えてください。起動完了まで並走します。
+不明点があれば、このREADMEの手順番号と現在の状況（コマンド結果/ログ）を教えてください。
