@@ -1,3 +1,14 @@
+---
+title: Music Separator Backend
+emoji: 🎵
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+<!-- 上記はHugging Face Spaces固有の記述 -->
+
 # バックエンド開発ガイド（Python + Flask + Demucs）
 
 このディレクトリは、楽器分離アプリのバックエンド（Python + Flask + Demucs）です。以下に、セットアップから起動、API仕様、トラブルシューティングまでを日本語でまとめました。
