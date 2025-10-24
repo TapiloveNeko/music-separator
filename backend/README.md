@@ -99,8 +99,8 @@ python app.py
 ```
 
 起動後、以下のURLでアクセス可能：
-- ヘルスチェック: `http://localhost:5000/health`
-- API ベースURL: `http://localhost:5000`
+- ヘルスチェック: `http://localhost:7860/health`
+- API ベースURL: `http://localhost:7860`
 
 ## 5. API エンドポイント
 
@@ -204,13 +204,13 @@ export FLASK_ENV=development
 # デバッグモード
 export FLASK_DEBUG=1
 
-# ポート変更（デフォルト: 5000、Hugging Face Spacesでは7860）
+# ポート変更（デフォルト: 7860、Hugging Face Spacesでは7860）
 export PORT=5001
 ```
 
 ## 9. フロントエンドとの連携
 
-- フロントエンドは `http://localhost:5000` にAPIリクエストを送信
+- フロントエンドは `http://localhost:7860` にAPIリクエストを送信
 - CORS設定により、`localhost:3000` からのアクセスを許可
 - ファイルアップロード → 非同期処理 → 結果取得の流れ
 

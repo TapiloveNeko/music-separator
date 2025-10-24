@@ -51,7 +51,7 @@ docker compose ps
 
 4) アクセス
 - フロント: http://localhost:3000
-- バックエンド: http://localhost:5000/health （{"status":"healthy"}）
+- バックエンド: http://localhost:7860/health （{"status":"healthy"}）
 - 逆プロキシ: http://localhost:8080 （nginx経由。不要なら無視）
 
 5) よくあるエラー
@@ -108,12 +108,12 @@ yarn start
 ### よくある問題
 
 - **アップロードで `Network Error`**
-  - バックエンドが起動しているか確認: `http://localhost:5000/health`
+  - バックエンドが起動しているか確認: `http://localhost:7860/health`
   - コンテナ状態確認: `docker compose ps`
-  - フロント設定 `BASE_URL` が `http://localhost:5000` か
+  - フロント設定 `BASE_URL` が `http://localhost:7860` か
 
 - **ポート競合**
-  - 3000/5000/8080 を占有している別プロセスを停止
+  - 3000/7860/8080 を占有している別プロセスを停止
   - Docker: `docker compose down` → `up -d`
 
 - **完全にリセットしたい**

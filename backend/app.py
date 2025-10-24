@@ -44,7 +44,7 @@ def update_progress(job_id, progress):
 
 def get_audio_info(temp_file_path):
     try:
-        waveform, sr = torchaudio.load(temp_file_path)
+        waveform, sr = torchaudio.load(temp_file_path, backend='soundfile')
         
         if waveform.shape[0] > 1:
             mono = waveform.mean(dim=0)
@@ -57,7 +57,7 @@ def get_audio_info(temp_file_path):
         
         chroma = librosa.feature.chroma_cqt(y=y, sr=sr)
         key_index = int(np.argmax(chroma.mean(axis=1)))
-        keys = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+        keys = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B']
         key = keys[key_index % 12]
         
         major_profile = np.array([1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1])
@@ -99,7 +99,7 @@ def demucs_separation(audio_data, job_id):
         info = get_audio_info(temp_file)
         update_progress(job_id, 15)
         
-        waveform, sr = torchaudio.load(temp_file)
+        waveform, sr = torchaudio.load(temp_file, backend='soundfile')
         
         update_progress(job_id, 25)
         
@@ -135,7 +135,7 @@ def demucs_separation(audio_data, job_id):
             if max_val > 0.99:
                 source_audio = source_audio * (0.99 / max_val)
             
-            torchaudio.save(buffer, source_audio, sr, format='wav', encoding='PCM_S', bits_per_sample=16)
+            torchaudio.save(buffer, source_audio, sr, format='wav', encoding='PCM_S', bits_per_sample=16, backend='soundfile')
             tracks[name] = buffer.getvalue()
             update_progress(job_id, 70 + (i + 1) * 5)
         
@@ -175,7 +175,7 @@ def upload_file():
         audio_data = file.read()
         
         thread = threading.Thread(target=demucs_separation, args=(audio_data, job_id))
-        thread.daemon = True
+        thread.daemon = False
         thread.start()
         
         return jsonify({
@@ -241,4 +241,4 @@ if __name__ == '__main__':
     # Hugging Face Spaces: ポート7860を使用（HF Spacesのデフォルト）
     port = int(os.environ.get("PORT", 7860))
     # Hugging Face Spaces: 本番環境なのでdebug=Falseに設定
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
