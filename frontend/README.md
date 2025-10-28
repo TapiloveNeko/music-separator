@@ -126,7 +126,114 @@ REACT_APP_API_URL=http://localhost:7860
 ```
 コード側では `process.env.REACT_APP_API_URL` で参照できます。
 
-## 9. トラブルシューティング
+## 9. 本番環境へのデプロイ
+
+### 9.1 デプロイの流れ
+
+1. バックエンドAPIをデプロイ（詳細は [`../backend/README.md`](../backend/README.md) 参照）
+2. バックエンドのURLを取得
+3. フロントエンドの環境変数を設定
+4. フロントエンドをビルド＆デプロイ
+
+### 9.2 環境変数の設定
+
+本番環境用の環境変数ファイル `.env.production` を作成：
+
+```bash
+cd frontend
+```
+
+`.env.production` ファイルを作成：
+```env
+REACT_APP_API_URL=https://your-backend-url.example.com
+```
+
+**重要**: `.env.production` は `.gitignore` に含まれているため、デプロイ前に手動で作成するか、デプロイ環境で設定してください。
+
+### 9.3 ビルド
+
+```bash
+# frontend ディレクトリで実行
+yarn build
+```
+
+`build/` ディレクトリに本番用ファイルが生成されます。
+
+### 9.4 デプロイ先の選択肢
+
+#### オプション1: GitHub Pages（無料、簡単）
+
+1. `package.json` の `homepage` を設定：
+```json
+{
+  "homepage": "https://your-username.github.io/music-separator"
+}
+```
+
+2. デプロイコマンドを実行：
+```bash
+yarn deploy
+```
+
+3. GitHubリポジトリの Settings → Pages で `gh-pages` ブランチを選択
+
+#### オプション2: Netlify（無料、自動ビルド）
+
+1. [Netlify](https://www.netlify.com/) にログイン
+2. GitHubリポジトリを連携
+3. ビルド設定：
+   - Build command: `cd frontend && yarn build`
+   - Publish directory: `frontend/build`
+   - Environment variables: `REACT_APP_API_URL`
+
+#### オプション3: Vercel（無料、高速）
+
+1. [Vercel](https://vercel.com/) にログイン
+2. GitHubリポジトリを連携
+3. Root Directory: `frontend`
+4. Environment variables: `REACT_APP_API_URL`
+
+#### オプション4: 静的サイトホスティング（Xserver等）
+
+1. `build/` ディレクトリの内容をFTP/SCPでアップロード
+2. Webサーバーのドキュメントルートに配置
+3. `.htaccess` でSPAのルーティング設定（必要な場合）：
+```apache
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+```
+
+### 9.5 デプロイ後の確認
+
+1. デプロイしたURLにアクセス
+2. ブラウザのDevTools（F12）→ Consoleタブを開く
+3. エラーがないか確認
+4. ファイルアップロードをテスト
+
+### 9.6 トラブルシューティング
+
+#### CORS エラー
+- バックエンドでCORSが正しく設定されているか確認
+- `backend/app.py` の `CORS(app, expose_headers=['Content-Disposition'])` を確認
+
+#### バックエンドに接続できない
+- `.env.production` のURLが正しいか確認
+- バックエンドのヘルスチェック: `https://your-backend-url/health`
+- フロントエンドを再ビルド＆再デプロイ
+
+#### 404エラー（GitHub Pages）
+- `package.json` の `homepage` が正しいか確認
+- `yarn deploy` を再実行
+- 数分待ってから再度アクセス
+
+## 10. トラブルシューティング（開発環境）
+
 - 依存関係の不整合が起きた場合：
   ```bash
   rm -rf node_modules yarn.lock package-lock.json

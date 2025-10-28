@@ -124,72 +124,30 @@ yarn start
 
 # 🌐 本番環境へのデプロイ
 
-このアプリケーションは、フロントエンドとバックエンドを別々のサービスにデプロイできます。
+このアプリケーションは、フロントエンドとバックエンドを別々にデプロイする構成です。
 
 ## デプロイ構成
 ```
 静的サイトホスティング（フロントエンド）
-例: GitHub Pages, Netlify, Vercel
+例: GitHub Pages, Netlify, Vercel, Xserver等
          ↓ APIリクエスト
-コンテナホスティング（バックエンド）
-例: Hugging Face Spaces, Render, Railway, AWS
+コンテナ/VPSホスティング（バックエンド）
+例: Hugging Face Spaces, Render, Railway, AWS, Xserver VPS等
 ```
 
 ## デプロイ手順
 
 ### 1. バックエンドのデプロイ
 
-お好みのコンテナホスティングサービスに `backend/` をデプロイしてください。
+バックエンドをお好みのサービスにデプロイします。
 
-**必要なファイル**:
-- `backend/app.py`
-- `backend/Dockerfile`
-- `backend/requirements.txt`
-
-**環境変数の設定**:
-- `PORT`: サービスが指定するポート（サービスにより異なる）
-
-**デプロイ後の確認**:
-```
-https://your-backend-url/health
-```
-
-詳細な手順は [`backend/README.md`](backend/README.md) の「本番環境へのデプロイ」セクションを参照してください。
+詳細は **[`backend/README.md`](backend/README.md)** を参照してください。
 
 ### 2. フロントエンドのデプロイ
 
-バックエンドのデプロイ完了後、フロントエンドをデプロイします。
+フロントエンドをお好みの静的サイトホスティングにデプロイします。
 
-**1. 環境変数を設定**
-
-`frontend/.env.production` を作成・編集：
-```bash
-REACT_APP_API_URL=https://your-backend-url
-```
-
-**2. ビルド**
-```bash
-cd frontend
-yarn build
-```
-
-**3. デプロイ**
-
-お好みの静的サイトホスティングサービスに `frontend/build/` の内容をデプロイしてください。
-
-詳細な手順は [`frontend/README.md`](frontend/README.md) の「デプロイ」セクションを参照してください。
-
-## サポートされるサービス例
-
-| カテゴリ | サービス例 | 特徴 |
-|---------|-----------|------|
-| **静的サイト** | GitHub Pages | 無料、GitHub連携 |
-|  | Netlify | 自動ビルド、CDN |
-|  | Vercel | Next.js最適化 |
-| **コンテナ** | Hugging Face Spaces | AI/ML向け、無料枠あり |
-|  | Render | Docker対応、簡単 |
-|  | Railway | 従量課金、簡単 |
-|  | AWS/GCP | スケーラブル |
+詳細は **[`frontend/README.md`](frontend/README.md)** を参照してください。
 
 ---
 

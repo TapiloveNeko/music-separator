@@ -214,163 +214,215 @@ export PORT=5001
 - CORS設定により、`localhost:3000` からのアクセスを許可
 - ファイルアップロード → 非同期処理 → 結果取得の流れ
 
-## 10. Hugging Face Spacesへのデプロイ
+## 10. 本番環境へのデプロイ
 
-### 10.1 Hugging Face Spacesとは
+このバックエンドは、様々なホスティングサービスにデプロイできます。
 
-**Hugging Face Spaces**は、機械学習アプリを無料でホスティングできるプラットフォームです。このバックエンドをHugging Face Spacesにデプロイすることで、GitHub Pagesのフロントエンドから本番環境のバックエンドAPIを利用できます。
-
-### 10.2 デプロイの流れ
+### 10.1 デプロイ構成の例
 ```
-GitHub Pages (フロントエンド)
-https://username.github.io/music-separator
+静的サイトホスティング (フロントエンド)
+https://your-domain.com
          ↓ APIリクエスト
-Hugging Face Spaces (バックエンド)
-https://username-music-separator.hf.space
+コンテナ/VPS (バックエンド)
+https://api.your-domain.com
 ```
 
-### 10.3 デプロイ手順
+### 10.2 必要なファイル
 
-#### ステップ1: Hugging Face アカウント作成
-1. https://huggingface.co/ にアクセス
-2. アカウントを作成（無料）
-
-#### ステップ2: 新しいSpaceを作成
-1. https://huggingface.co/spaces にアクセス
-2. 「Create new Space」をクリック
-3. 設定：
-   - **Space名**: `music-separator`（任意）
-   - **SDK**: `Docker`を選択
-   - **Visibility**: `Public`（無料プラン）
-
-#### ステップ3: backendフォルダの内容をアップロード
-
-Hugging Face Spacesのリポジトリに以下のファイルをアップロード：
+デプロイには以下のファイルが必要です：
 ```
 backend/
 ├── app.py
 ├── requirements.txt
-├── Dockerfile
-└── README.md（このファイル）
+└── Dockerfile
 ```
 
-**重要**: `backend/README.md`のメタデータ（YAMLヘッダー）が正しく設定されていることを確認してください。
+### 10.3 デプロイ先の選択肢
 
-#### ステップ4: Hugging Face Spaces固有の設定
+#### オプション1: Hugging Face Spaces（無料、AI/ML特化）
 
-このバックエンドは、Hugging Face Spaces向けに以下の設定が施されています：
+**特徴**: 無料枠あり、GPU対応、スリープ機能あり
 
-##### **app.py の設定**
-```python
-# Hugging Face Spaces: ポート7860を使用（HF Spacesのデフォルト）
-port = int(os.environ.get("PORT", 7860))
-# Hugging Face Spaces: 本番環境なのでdebug=Falseに設定
-app.run(debug=False, host='0.0.0.0', port=port)
-
-# Hugging Face Spaces: GitHub Pagesからのアクセスを許可するためCORSを有効化
-CORS(app)
-```
-
-##### **Dockerfile の設定**
-```dockerfile
-# Hugging Face Spaces: ポート7860を公開（HF Spacesのデフォルトポート）
-EXPOSE 7860
-
-# Hugging Face Spaces: 環境変数でポート7860を指定
-ENV PORT=7860
-```
-
-##### **README.md のメタデータ（YAMLヘッダー）**
+1. https://huggingface.co/spaces でSpaceを作成
+2. SDK: `Docker` を選択
+3. 上記ファイルをアップロード
+4. README.mdのYAMLヘッダーを設定：
 ```yaml
 ---
 title: Music Separator Backend
 emoji: 🎵
-colorFrom: blue
-colorTo: purple
 sdk: docker
 app_port: 7860
-pinned: false
 ---
 ```
 
-#### ステップ5: デプロイ完了を待つ
-- Hugging Face Spacesが自動的にDockerイメージをビルド
-- 初回は10〜20分程度かかる場合があります
-- ビルドログで進行状況を確認できます
+**デフォルトポート**: 7860
 
-#### ステップ6: デプロイ完了後のURL確認
-デプロイが完了すると、以下のようなURLが発行されます：
+#### オプション2: Render（簡単、無料枠あり）
+
+**特徴**: Dockerサポート、自動デプロイ、無料枠あり
+
+1. https://render.com/ でアカウント作成
+2. 「New +」→「Web Service」を選択
+3. GitHubリポジトリを連携
+4. 設定：
+   - Environment: `Docker`
+   - Dockerfile Path: `backend/Dockerfile`
+   - Environment Variables: 必要に応じて設定
+
+#### オプション3: Railway（従量課金、簡単）
+
+**特徴**: 自動デプロイ、スケーラブル
+
+1. https://railway.app/ でアカウント作成
+2. GitHubリポジトリを連携
+3. `backend/` ディレクトリを指定
+4. Dockerfileが自動検出される
+
+#### オプション4: AWS（スケーラブル、本格運用向け）
+
+**ECS + Fargate の例**:
+1. ECRにDockerイメージをプッシュ
+2. ECSタスク定義を作成
+3. Fargateでサービスを起動
+4. ALBで外部公開
+
+**参考コマンド**:
+```bash
+# Dockerイメージをビルド
+docker build -t music-separator backend/
+
+# ECRにプッシュ
+aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com
+docker tag music-separator:latest <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/music-separator:latest
+docker push <account-id>.dkr.ecr.ap-northeast-1.amazonaws.com/music-separator:latest
 ```
-https://your-username-music-separator.hf.space
+
+#### オプション5: VPS（Xserver VPS、さくらのVPS等）
+
+**手順**:
+1. VPSにSSH接続
+2. Dockerをインストール
+3. リポジトリをクローン
+4. Dockerイメージをビルド＆起動
+
+```bash
+# VPSにSSH接続
+ssh user@your-vps.example.com
+
+# Dockerをインストール（Ubuntu/Debian）
+sudo apt update
+sudo apt install -y docker.io docker-compose
+
+# リポジトリをクローン
+git clone https://github.com/your-username/music-separator.git
+cd music-separator/backend
+
+# Dockerイメージをビルド
+sudo docker build -t music-separator .
+
+# コンテナを起動
+sudo docker run -d -p 7860:7860 --name music-separator music-separator
+
+# nginx等でリバースプロキシ設定（SSL対応推奨）
 ```
 
-このURLをフロントエンドの環境変数に設定します（次セクション参照）。
+### 10.4 環境変数の設定
 
-### 10.4 フロントエンドとの連携設定
+本番環境では、以下の環境変数を設定してください：
+
+| 環境変数 | 説明 | デフォルト |
+|---------|------|-----------|
+| `PORT` | APIサーバーのポート | 7860 |
+| `FLASK_ENV` | 実行環境 | production |
+| `FLASK_DEBUG` | デバッグモード | False（本番はFalse推奨） |
+
+### 10.5 CORSの設定
+
+`app.py` でCORSが有効になっていることを確認：
+```python
+from flask_cors import CORS
+CORS(app, expose_headers=['Content-Disposition'])
+```
+
+特定のオリジンのみ許可する場合：
+```python
+CORS(app, origins=["https://your-domain.com"], expose_headers=['Content-Disposition'])
+```
+
+### 10.6 フロントエンドとの連携
 
 デプロイ完了後、フロントエンド側の設定を更新します：
 
-#### `frontend/.env.production` を編集
-```bash
-# Hugging Face SpacesのURLに置き換え
-REACT_APP_API_URL=https://your-username-music-separator.hf.space
+`frontend/.env.production` を作成・編集：
+```env
+REACT_APP_API_URL=https://your-backend-url.example.com
 ```
 
-#### フロントエンドを再ビルド・デプロイ
+フロントエンドを再ビルド・デプロイ：
 ```bash
 cd frontend
-npm run build
-npm run deploy  # GitHub Pagesにデプロイ
+yarn build
+yarn deploy  # またはお好みのデプロイ方法
 ```
 
-### 10.5 動作確認
+### 10.7 動作確認
 
-1. GitHub PagesのURL（`https://your-username.github.io/music-separator`）にアクセス
-2. 音声ファイルをアップロード
-3. Hugging Face Spacesが裏で処理を実行
-4. 分離されたトラックが取得できれば成功！
+1. ヘルスチェック：
+```bash
+curl https://your-backend-url.example.com/health
+```
 
-### 10.6 Hugging Face Spacesの制約
+**期待される応答**:
+```json
+{
+  "status": "healthy",
+  "device": "cpu",
+  "model_loaded": true
+}
+```
 
-#### 無料プランの制限
-- **メモリ**: 16GB（Demucsは動作可能）
-- **GPU**: ZeroGPU（無料枠あり、処理高速化）
-- **ストレージ**: 一時ファイルのみ（永続化不可）
-- **同時処理**: 制限あり（複数ユーザーが同時アクセスすると遅延）
+2. フロントエンドから音声ファイルをアップロードしてテスト
 
-#### 処理時間
-- **CPU版**: 1曲あたり3〜5分
-- **GPU版**: 1曲あたり30秒〜1分
-
-#### スリープ機能
-- 一定時間アクセスがないとスリープ状態になる
-- 次回アクセス時に起動（30秒〜1分かかる）
-
-### 10.7 トラブルシューティング
+### 10.8 トラブルシューティング
 
 #### ビルドエラーが発生する場合
 ```bash
-# requirements.txtの依存関係を確認
-pip install -r requirements.txt
-
 # ローカルでDockerビルドをテスト
+cd backend
 docker build -t music-separator .
 docker run -p 7860:7860 music-separator
 ```
 
 #### CORSエラーが発生する場合
-- `app.py`で`CORS(app)`が有効になっているか確認
-- フロントエンドの`.env.production`のURLが正しいか確認
+- `app.py` で `CORS(app, expose_headers=['Content-Disposition'])` が設定されているか確認
+- フロントエンドの `.env.production` のURLが正しいか確認
+
+#### メモリ不足エラー
+- Demucsは大きなメモリを消費します（最低8GB推奨）
+- より軽いモデル（htdemucs_6s）を使用
+- サーバースペックのアップグレードを検討
 
 #### 処理がタイムアウトする場合
-- Hugging Face Spacesの無料プランでは処理時間に制限がある
+- サーバーのタイムアウト設定を延長（nginx等）
+- GPU環境を使用（処理が約4〜10倍高速化）
 - より軽いモデル（htdemucs_6s）を使用
-- 有料プランへのアップグレードを検討
 
-### 10.8 参考リンク
+### 10.9 パフォーマンス最適化
+
+#### GPU対応（推奨）
+GPU環境でデプロイすると処理が大幅に高速化されます：
+- **CPU**: 1曲あたり3〜5分
+- **GPU**: 1曲あたり30秒〜1分
+
+#### キャッシュ設定
+処理済みのジョブは自動的にメモリに保持されますが、サーバー再起動時にクリアされます。永続化が必要な場合は、Redis等の外部キャッシュを検討してください。
+
+### 10.10 参考リンク
 
 - [Hugging Face Spaces公式ドキュメント](https://huggingface.co/docs/hub/spaces)
-- [Docker SDK ドキュメント](https://huggingface.co/docs/hub/spaces-sdks-docker)
+- [Render公式ドキュメント](https://render.com/docs)
+- [Railway公式ドキュメント](https://docs.railway.app/)
 - [Demucs公式リポジトリ](https://github.com/facebookresearch/demucs)
 
 ---
