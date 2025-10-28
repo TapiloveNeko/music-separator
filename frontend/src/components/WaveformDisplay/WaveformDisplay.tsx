@@ -1,20 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import styled from 'styled-components';
 import { AudioTrack } from '../../types';
 import { useAudio } from '../../contexts/AudioContext';
-
-const WaveformContainer = styled.div`
-  width: 100%;
-  height: 100%;
-  position: relative;
-`;
-
-const Canvas = styled.canvas`
-  width: 100%;
-  height: 100%;
-  display: block;
-  cursor: pointer;
-`;
 
 interface WaveformDisplayProps {
   track: AudioTrack;
@@ -116,9 +102,13 @@ const WaveformDisplay: React.FC<WaveformDisplayProps> = ({ track }) => {
   };
 
   return (
-    <WaveformContainer ref={containerRef}>
-      <Canvas ref={canvasRef} onMouseDown={handleMouseDown} />
-    </WaveformContainer>
+    <div ref={containerRef} className="w-full h-full relative">
+      <canvas 
+        ref={canvasRef} 
+        onMouseDown={handleMouseDown}
+        className="w-full h-full block cursor-pointer"
+      />
+    </div>
   );
 };
 

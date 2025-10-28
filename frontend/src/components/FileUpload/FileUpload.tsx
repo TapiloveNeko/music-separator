@@ -1,58 +1,5 @@
 import React, { useRef } from 'react';
-import styled from 'styled-components';
 import { useAudio } from '../../contexts/AudioContext';
-
-const UploadContainer = styled.div`
-  display: grid;
-  place-content: start center;
-  min-height: 400px;
-  text-align: center;
-  margin: 4rem 0 0;
-`;
-
-const UploadButton = styled.button`
-  background-color: #8e44ad;
-  border: none;
-  border-radius: 15px;
-  padding: 2.4rem 4.8rem;
-  font-size: 2rem;
-  font-weight: 500;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(142, 68, 173, 0.3);
-  display: inline-flex;
-  align-items: center;
-  gap: 0.8rem;
-
-  &:hover {
-    transform: translateY(2px);
-    box-shadow: none;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const UploadIcon = styled.span`
-  font-size: 2.4rem;
-`;
-
-const FileInput = styled.input`
-  display: none;
-`;
-
-const FileInfo = styled.div`
-  margin: 1.6rem 0 0;
-  padding: 1.6rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  font-size: 1.4rem;
-  color: #ffffff;
-`;
 
 const FileUpload: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -72,28 +19,33 @@ const FileUpload: React.FC = () => {
   const isProcessing = state.processingStatus.status !== 'idle';
 
   return (
-    <UploadContainer>
-      <UploadButton onClick={handleUploadClick} disabled={isProcessing}>
-        <UploadIcon>📁</UploadIcon>
+    <div className="flex flex-col items-center min-h-[300px] md:min-h-[400px] text-center mt-8 md:mt-16">
+      <button 
+        onClick={handleUploadClick} 
+        disabled={isProcessing}
+        className="bg-secondary border-none rounded-[15px] py-6 px-12 md:py-10 md:px-20 text-[1.6rem] md:text-[2rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 md:gap-3 hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+      >
+        <span className="text-[2rem] md:text-[2.4rem]">📁</span>
         ファイルを選択
-      </UploadButton>
+      </button>
       
-      <FileInput
+      <input
         ref={fileInputRef}
         type="file"
         accept="audio/*"
         onChange={handleFileSelect}
         disabled={isProcessing}
+        className="hidden"
       />
       
       {state.currentFile && (
-        <FileInfo>
+        <div className="mt-4 md:mt-6 p-4 md:p-6 bg-white/10 rounded-[10px] text-[1.2rem] md:text-[1.4rem] text-white max-w-full break-all">
           選択されたファイル: {state.currentFile.name}
           <br />
           サイズ: {(state.currentFile.size / 1024 / 1024).toFixed(2)} MB
-        </FileInfo>
+        </div>
       )}
-    </UploadContainer>
+    </div>
   );
 };
 

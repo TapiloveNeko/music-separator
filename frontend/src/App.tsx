@@ -1,105 +1,9 @@
 import React from 'react';
-import styled, { createGlobalStyle } from 'styled-components';
 import { AudioProvider, useAudio } from './contexts/AudioContext';
 import FileUpload from './components/FileUpload';
 import ProcessingStatus from './components/ProcessingStatus';
 import TrackControls from './components/TrackControls';
 import AudioPlayer from './components/AudioPlayer';
-
-const GlobalStyle = createGlobalStyle`
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    overscroll-behavior: none;
-    font-size: 62.5%;
-  }
-
-  body {
-    font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    background: #16213e;
-    color: #ffffff;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  code {
-    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-  }
-`;
-
-const AppContainer = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-`;
-
-const Header = styled.header`
-  text-align: center;
-  margin: 8rem 0 0;
-  backdrop-filter: blur(10px);
-`;
-
-const MainTitle = styled.h1`
-  font-size: 4rem;
-  font-weight: 700;
-  margin: 0 0 0.8rem;
-  background: #ffffff;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-`;
-
-const Subtitle = styled.p`
-  font-size: 1.8rem;
-  font-weight: 300;
-  margin: 0;
-  opacity: 0.8;
-`;
-
-const MainContent = styled.main`
-  flex: 1;
-  padding: 3.2rem;
-`;
-
-const SeparationSection = styled.div`
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-`;
-
-const FileInfo = styled.div`
-  text-align: right;
-  margin: 0 0 3.2rem;
-`;
-
-const FileName = styled.span`
-  font-size: 1.8rem;
-  font-weight: 500;
-  color: #ffffff;
-`;
-
-const TracksContainer = styled.div`
-  margin: 0 0 3.2rem;
-  position: relative;
-`;
-
-const GlobalPlayhead = styled.div<{ $leftPx: number }>`
-  position: absolute;
-  top: 0;
-  left: ${props => props.$leftPx}px;
-  width: 2px;
-  height: 100%;
-  background-color: #ffffff;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
-  z-index: 20;
-  pointer-events: none;
-`;
 
 const AppContent: React.FC = () => {
   const { state, seekTo } = useAudio();
@@ -131,11 +35,15 @@ const AppContent: React.FC = () => {
     }
   }, [showSeparation, tracks]);
 
+  const getLeftSectionWidth = () => {
+    return window.innerWidth < 768 ? 120 : 200;
+  };
+
   const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!tracksRef.current) return;
     
     const rect = tracksRef.current.getBoundingClientRect();
-    const leftSectionWidth = 200;
+    const leftSectionWidth = getLeftSectionWidth();
     const x = event.clientX - rect.left - leftSectionWidth;
     const waveformWidth = rect.width - leftSectionWidth;
     const progress = Math.max(0, Math.min(1, x / waveformWidth));
@@ -149,7 +57,7 @@ const AppContent: React.FC = () => {
     if (!isDragging || !tracksRef.current) return;
     
     const rect = tracksRef.current.getBoundingClientRect();
-    const leftSectionWidth = 200;
+    const leftSectionWidth = window.innerWidth < 768 ? 120 : 200;
     const x = event.clientX - rect.left - leftSectionWidth;
     const waveformWidth = rect.width - leftSectionWidth;
     const progress = Math.max(0, Math.min(1, x / waveformWidth));
@@ -185,28 +93,33 @@ const AppContent: React.FC = () => {
     ? (lastSeekTime !== null ? lastSeekTime / duration : currentTime / duration)
     : 0;
   
+  const leftSectionWidth = getLeftSectionWidth();
   const playheadLeftPx = containerWidth > 0
-    ? 200 + playheadProgress * (containerWidth - 200)
-    : 200;
+    ? leftSectionWidth + playheadProgress * (containerWidth - leftSectionWidth)
+    : leftSectionWidth;
 
   return (
-    <AppContainer>
-      <Header>
-        <MainTitle>曲から楽器を切り離す</MainTitle>
-        <Subtitle>AI搭載のアルゴリズムで音楽を分割して表示</Subtitle>
-      </Header>
+    <div className="min-h-screen flex flex-col">
+      <header className="text-center pt-16 md:pt-32 px-8 md:px-12 backdrop-blur-[10px]">
+        <h1 className="text-[2.8rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
+          曲から楽器を切り離す
+        </h1>
+        <p className="text-[1.4rem] md:text-[1.8rem] font-light mt-2 md:mt-4 opacity-80">
+          AI搭載のアルゴリズムで音楽を分割して表示
+        </p>
+      </header>
 
-      <MainContent>
+      <main className="flex-1 p-8 md:p-12">
         {showUpload && <FileUpload />}
         <ProcessingStatus />
         
         {showSeparation && (
-          <SeparationSection>
-            <FileInfo>
-              <FileName>{currentFile?.name}</FileName>
-            </FileInfo>
+          <div className="w-full max-w-[1200px] mx-auto rounded-[20px] backdrop-blur-[10px]">
+            <div className="text-center md:text-right">
+              <span className="text-[1.4rem] md:text-[1.8rem] font-medium text-white break-all">{currentFile?.name}</span>
+            </div>
 
-            <TracksContainer ref={tracksRef}>
+            <div ref={tracksRef} className="mt-6 md:mt-12 relative">
               {tracks.map(track => (
                 <TrackControls 
                   key={track.id} 
@@ -214,25 +127,25 @@ const AppContent: React.FC = () => {
                   onWaveformMouseDown={handleMouseDown}
                 />
               ))}
-              <GlobalPlayhead $leftPx={playheadLeftPx} />
-            </TracksContainer>
+              <div 
+                className="absolute top-0 w-[2px] h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.6)] z-20 pointer-events-none"
+                style={{ left: `${playheadLeftPx}px` }}
+              />
+            </div>
 
             <AudioPlayer />
-          </SeparationSection>
+          </div>
         )}
-      </MainContent>
-    </AppContainer>
+      </main>
+    </div>
   );
 };
 
 const App: React.FC = () => {
   return (
-    <>
-      <GlobalStyle />
-      <AudioProvider>
-        <AppContent />
-      </AudioProvider>
-    </>
+    <AudioProvider>
+      <AppContent />
+    </AudioProvider>
   );
 };
 

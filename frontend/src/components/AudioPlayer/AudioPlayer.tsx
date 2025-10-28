@@ -1,139 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import styled from 'styled-components';
 import { useAudio } from '../../contexts/AudioContext';
-
-const PlayerContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 3.2rem;
-  margin: 3.2rem 0 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 3.2rem 0 0;
-`;
-
-const PlaybackControls = styled.div`
-  display: flex;
-  gap: 1.6rem;
-  align-items: center;
-`;
-
-const ControlButton = styled.button`
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: none;
-  background-color: #8e44ad;
-  color: #ffffff;
-  font-size: 2rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: grid;
-  place-content: center;
-  box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
-
-  &:hover {
-    transform: scale(0.95);
-    box-shadow: none;
-  }
-
-  &.play-button {
-    width: 60px;
-    height: 60px;
-    font-size: 2.4rem;
-  }
-`;
-
-const TimeDisplay = styled.input`
-  font-size: 2rem;
-  font-weight: 500;
-  font-family: 'Courier New', monospace;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.8rem 1.6rem;
-  border-radius: 10px;
-  border: 1px solid transparent;
-  color: #ffffff;
-  width: 120px;
-  text-align: center;
-  outline: none;
-  cursor: text;
-
-  &:focus {
-    border-color: rgba(255, 255, 255, 0.3);
-    background: rgba(0, 0, 0, 0.4);
-  }
-`;
-
-const MusicInfo = styled.div``;
-
-const InfoLabel = styled.span`
-  font-size: 1.4rem;
-  color: #ffffff;
-`;
-
-const InfoValue = styled.span`
-  font-size: 1.4rem;
-  font-weight: 500;
-`;
-
-const ExportSection = styled.div`
-  display: grid;
-  justify-items: end;
-  gap: 1.6rem;
-`;
-
-const FormatLabel = styled.span`
-  font-size: 1.4rem;
-  color: #ffffff;
-`;
-
-const FormatValue = styled.span`
-  font-size: 1.4rem;
-  font-weight: 500;
-`;
-
-const ExportButton = styled.button`
-  background-color: #2ecc71;
-  border: none;
-  border-radius: 10px;
-  padding: 1.2rem 3.2rem;
-  font-size: 1.6rem;
-  font-weight: 500;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
-
-  &:hover {
-    transform: translateY(2px);
-    box-shadow: none;
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-  }
-`;
-
-const ResetButton = styled.button`
-  background-color: #e74c3c;
-  border: none;
-  border-radius: 10px;
-  padding: 1.2rem 3.2rem;
-  font-size: 1.6rem;
-  font-weight: 500;
-  color: #ffffff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-
-  &:hover {
-    transform: translateY(2px);
-    box-shadow: none;
-  }
-`;
 
 const AudioPlayer: React.FC = () => {
   const { state, togglePlayback, exportTracks, resetApp, seekTo } = useAudio();
@@ -272,57 +138,99 @@ const AudioPlayer: React.FC = () => {
   const canExport = processingStatus.status === 'completed';
 
   return (
-    <PlayerContainer>
-      <PlaybackControls>
-        <ControlButton onClick={handleResetToStart}>
-          ⏮
-        </ControlButton>
-        <ControlButton 
-          className="play-button" 
-          onClick={togglePlayback}
-        >
-          {isPlaying ? '⏸' : '▶'}
-        </ControlButton>
-      </PlaybackControls>
-      
-      <TimeDisplay
-        type="text"
-        value={timeInput}
-        onChange={handleTimeInputChange}
-        onFocus={handleTimeInputFocus}
-        onBlur={handleTimeInputBlur}
-        onKeyDown={handleTimeInputKeyDown}
-        placeholder="MM:SS.D"
-        maxLength={8}
-      />
+    <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-12 mt-6 md:mt-12 border-t border-white/10 pt-6 md:pt-12">
+      {/* SP: 秒数inputと再生ボタンをspace-between */}
+      <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 w-full md:w-auto">
+        <div className="flex justify-between items-center w-full md:w-auto md:gap-6">
+          {/* SP: 秒数inputを左に */}
+          <input
+            type="text"
+            value={timeInput}
+            onChange={handleTimeInputChange}
+            onFocus={handleTimeInputFocus}
+            onBlur={handleTimeInputBlur}
+            onKeyDown={handleTimeInputKeyDown}
+            placeholder="MM:SS.D"
+            maxLength={8}
+            className="text-[1.6rem] md:text-[2rem] font-medium font-mono bg-black/30 py-2 md:py-3 px-4 md:px-6 rounded-[10px] border border-transparent text-white w-[100px] md:w-[120px] text-center outline-none cursor-text focus:border-white/30 focus:bg-black/40 md:hidden"
+          />
+          <div className="flex gap-4 items-center">
+            <button 
+              onClick={handleResetToStart}
+              className="w-[45px] md:w-[50px] h-[45px] md:h-[50px] rounded-full border-none bg-secondary text-white text-[1.8rem] md:text-[2rem] cursor-pointer transition-all duration-300 grid place-content-center shadow-[0_4px_15px_rgba(142,68,173,0.3)] hover:scale-95 hover:shadow-none"
+            >
+              ⏮
+            </button>
+            <button 
+              onClick={togglePlayback}
+              className="w-[55px] md:w-[60px] h-[55px] md:h-[60px] rounded-full border-none bg-secondary text-white text-[2rem] md:text-[2.4rem] cursor-pointer transition-all duration-300 grid place-content-center shadow-[0_4px_15px_rgba(142,68,173,0.3)] hover:scale-95 hover:shadow-none"
+            >
+              {isPlaying ? '⏸' : '▶'}
+            </button>
+          </div>
+        </div>
+        
+        {/* PC: 秒数inputは独立 */}
+        <input
+          type="text"
+          value={timeInput}
+          onChange={handleTimeInputChange}
+          onFocus={handleTimeInputFocus}
+          onBlur={handleTimeInputBlur}
+          onKeyDown={handleTimeInputKeyDown}
+          placeholder="MM:SS.D"
+          maxLength={8}
+          className="hidden md:block text-[2rem] font-medium font-mono bg-black/30 py-3 px-6 rounded-[10px] border border-transparent text-white w-[120px] text-center outline-none cursor-text focus:border-white/30 focus:bg-black/40"
+        />
+      </div>
 
-      <MusicInfo>
-        <div>
-          <InfoLabel>音楽調: </InfoLabel>
-          <InfoValue>{audioInfo?.key || '取得できませんでした'}</InfoValue>
+      {/* SP: keyとテンポを縦並び、フォーマットとspace-between */}
+      <div className="flex flex-col md:flex-row items-center gap-3 md:gap-6 text-center md:text-left w-full md:w-auto">
+        <div className="flex justify-between items-center w-full md:w-auto md:block">
+          {/* keyとテンポを縦並び */}
+          <div className="flex flex-col gap-1 text-left md:text-left">
+            <div className="whitespace-nowrap">
+              <span className="text-[1.2rem] md:text-[1.4rem] text-white">音楽調: </span>
+              <span className="text-[1.2rem] md:text-[1.4rem] font-medium">{audioInfo?.key || '取得できませんでした'}</span>
+            </div>
+            <div className="whitespace-nowrap">
+              <span className="text-[1.2rem] md:text-[1.4rem] text-white">拍/分: </span>
+              <span className="text-[1.2rem] md:text-[1.4rem] font-medium">{audioInfo?.tempo || '取得できませんでした'}</span>
+            </div>
+          </div>
+          {/* フォーマット（SPのみ） */}
+          <div className="whitespace-nowrap md:hidden text-right">
+            <span className="text-[1.2rem] text-white">フォーマット: </span>
+            <span className="text-[1.2rem] font-medium">mp3</span>
+          </div>
         </div>
-        <div>
-          <InfoLabel>拍/分: </InfoLabel>
-          <InfoValue>{audioInfo?.tempo || '取得できませんでした'}</InfoValue>
-        </div>
-      </MusicInfo>
+      </div>
 
-      <ExportSection>
-        <div>
-          <FormatLabel>フォーマット: </FormatLabel>
-          <FormatValue>mp3</FormatValue>
+      <div className="flex flex-col items-center md:items-end gap-3 md:gap-6 w-full md:w-auto">
+        <div className="hidden md:block">
+          <span className="text-[1.4rem] text-white">フォーマット: </span>
+          <span className="text-[1.4rem] font-medium">mp3</span>
         </div>
-        <ExportButton 
-          onClick={exportTracks}
-          disabled={!canExport}
-        >
-          保存
-        </ExportButton>
-        <ResetButton onClick={resetApp}>
-          新しい曲を選択
-        </ResetButton>
-      </ExportSection>
-    </PlayerContainer>
+        {/* SP: ボタンを横並び、PC: 縦並び */}
+        <div className="flex flex-row md:flex-col items-center gap-3 md:gap-4 w-full md:w-auto">
+          {/* SP: 新しい曲選択が左 */}
+          <button 
+            onClick={resetApp}
+            className="flex-1 md:flex-none bg-danger border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.4rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(231,76,60,0.3)] hover:translate-y-[2px] hover:shadow-none order-1 md:order-2"
+          >
+            新しい曲を選択
+          </button>
+          {/* SP: 保存が右 */}
+          <button 
+            onClick={exportTracks}
+            disabled={!canExport}
+            className="flex-1 md:flex-none bg-success border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.4rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(46,204,113,0.3)] hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none order-2 md:order-1"
+          >
+            保存
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,88 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import styled, { keyframes } from 'styled-components';
 import { useAudio } from '../../contexts/AudioContext';
-
-const ProcessingContainer = styled.div`
-  display: grid;
-  place-content: center;
-  min-height: 400px;
-  text-align: center;
-`;
-
-const ProgressCircle = styled.div`
-  width: 120px;
-  height: 120px;
-  position: relative;
-  margin: 0 auto 3.2rem;
-`;
-
-const SVGCircle = styled.svg`
-  transform: rotate(-90deg);
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
-`;
-
-const CircleBackground = styled.circle`
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.1);
-  stroke-width: 8;
-`;
-
-const CircleProgress = styled.circle<{ $progress: number }>`
-  fill: none;
-  stroke: url(#gradient);
-  stroke-width: 8;
-  stroke-linecap: round;
-  stroke-dasharray: ${2 * Math.PI * 56};
-  stroke-dashoffset: ${props => 2 * Math.PI * 56 * (1 - props.$progress / 100)};
-  transition: stroke-dashoffset 0.3s ease;
-`;
-
-const ProgressTextContainer = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-`;
-
-const ProgressText = styled.span`
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #ffffff;
-`;
-
-const PercentSymbol = styled.span`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ffffff;
-`;
-
-const ProcessingText = styled.p`
-  font-size: 1.8rem;
-  font-weight: 300;
-  margin: 0 0 1.6rem;
-`;
-
-const pulse = keyframes`
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-`;
-
-const AnimatedText = styled(ProcessingText)`
-  animation: ${pulse} 2s infinite;
-`;
-
-const ErrorMessage = styled.div`
-  background: rgba(231, 76, 60, 0.2);
-  border: 1px solid rgba(231, 76, 60, 0.3);
-  border-radius: 10px;
-  padding: 1.6rem;
-  color: #e74c3c;
-  margin: 1.6rem 0 0;
-`;
 
 const ProcessingStatus: React.FC = () => {
   const { state } = useAudio();
@@ -115,47 +32,64 @@ const ProcessingStatus: React.FC = () => {
   }
 
   const isError = processingStatus.status === 'error';
+  
+  const circumference = 2 * Math.PI * 56;
+  const strokeDashoffset = circumference * (1 - displayProgress / 100);
 
   return (
-    <ProcessingContainer>
-      <ProgressCircle>
-        <SVGCircle>
+    <div className="grid place-content-center min-h-[300px] md:min-h-[400px] text-center">
+      <div className="w-[100px] md:w-[120px] h-[100px] md:h-[120px] relative mx-auto mb-8 md:mb-12">
+        <svg 
+          className="rotate-[-90deg] w-full h-full drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"
+          viewBox="0 0 120 120"
+        >
           <defs>
             <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#ffffff" />
               <stop offset="100%" stopColor="#ffffff" />
             </linearGradient>
           </defs>
-          <CircleBackground
+          <circle
             cx="60"
             cy="60"
             r="56"
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.1)"
+            strokeWidth="8"
           />
-          <CircleProgress
+          <circle
             cx="60"
             cy="60"
             r="56"
-            $progress={displayProgress}
+            fill="none"
+            stroke="url(#gradient)"
+            strokeWidth="8"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            className="transition-[stroke-dashoffset] duration-300 ease-out"
           />
-        </SVGCircle>
-        <ProgressTextContainer>
-          <ProgressText>
+        </svg>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+          <span className="text-[2.4rem] md:text-[2.8rem] font-bold text-white">
             {Math.round(displayProgress)}
-            <PercentSymbol>%</PercentSymbol>
-          </ProgressText>
-        </ProgressTextContainer>
-      </ProgressCircle>
+            <span className="text-[1.6rem] md:text-[2rem] font-bold text-white">%</span>
+          </span>
+        </div>
+      </div>
       
       {isError ? (
-        <ErrorMessage>
+        <div className="bg-danger/20 border border-danger/30 rounded-[10px] p-4 md:p-6 text-danger mt-4 md:mt-6 text-[1.2rem] md:text-[1.4rem]">
           <strong>エラーが発生しました</strong>
           <br />
           {processingStatus.error || '不明なエラーが発生しました'}
-        </ErrorMessage>
+        </div>
       ) : (
-        <AnimatedText>{processingStatus.message}</AnimatedText>
+        <p className="text-[1.4rem] md:text-[1.8rem] font-light m-0 mb-4 md:mb-6 animate-pulse px-4">
+          {processingStatus.message}
+        </p>
       )}
-    </ProcessingContainer>
+    </div>
   );
 };
 

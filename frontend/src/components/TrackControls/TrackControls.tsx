@@ -1,100 +1,7 @@
 import React from 'react';
-import styled from 'styled-components';
 import { AudioTrack } from '../../types';
 import WaveformDisplay from '../WaveformDisplay';
 import { useAudio } from '../../contexts/AudioContext';
-
-const TrackContainer = styled.div`
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  height: 80px;
-`;
-
-const TrackLeftSection = styled.div`
-  width: 200px;
-  height: 100%;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.3);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-`;
-
-const TrackName = styled.span`
-  font-size: 1.6rem;
-  font-weight: 500;
-`;
-
-const VolumeControl = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  margin: 0.8rem 0 0;
-`;
-
-const VolumeSlider = styled.input`
-  flex: 1;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(255, 255, 255, 0.2);
-  outline: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-
-  &::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #ffffff;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-
-  &::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #ffffff;
-    cursor: pointer;
-    border: none;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-`;
-
-const VolumeInput = styled.input`
-  width: 45px;
-  height: 28px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  color: #ffffff;
-  text-align: center;
-  font-size: 1.4rem;
-  outline: none;
-
-  &:focus {
-    border-color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.15);
-  }
-
-  &::-webkit-inner-spin-button,
-  &::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  -moz-appearance: textfield;
-`;
-
-const WaveformSection = styled.div<{ $trackColor: string }>`
-  flex: 1;
-  position: relative;
-  height: 100%;
-  background: ${props => props.$trackColor}54;
-  cursor: pointer;
-`;
 
 interface TrackControlsProps {
   track: AudioTrack;
@@ -141,31 +48,42 @@ const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDow
   };
 
   return (
-    <TrackContainer>
-      <TrackLeftSection className="track-left-section">
-        <TrackName>{track.name}</TrackName>
-        <VolumeControl>
-          <VolumeSlider
+    <div className="border-b border-white/5 relative flex items-center h-[70px] md:h-[80px]">
+      <div className="track-left-section w-[120px] md:w-[200px] h-full p-2 md:p-4 bg-black/30 border-r border-white/5 flex flex-col justify-center">
+        <span className="text-[1.2rem] md:text-[1.6rem] font-medium truncate block">{track.name}</span>
+        <div className="flex items-center gap-2 md:gap-3 mt-2 md:mt-3">
+          <input
             type="range"
             min="0"
             max="100"
             value={track.volume}
             onChange={handleVolumeChange}
+            className="flex-1 min-w-0 h-[4px] rounded-[2px] bg-white/20 outline-none appearance-none cursor-pointer
+              [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[12px] md:[&::-webkit-slider-thumb]:w-[14px] [&::-webkit-slider-thumb]:h-[12px] md:[&::-webkit-slider-thumb]:h-[14px] [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-[0_2px_4px_rgba(0,0,0,0.3)]
+              [&::-moz-range-thumb]:w-[12px] md:[&::-moz-range-thumb]:w-[14px] [&::-moz-range-thumb]:h-[12px] md:[&::-moz-range-thumb]:h-[14px] [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:border-none [&::-moz-range-thumb]:shadow-[0_2px_4px_rgba(0,0,0,0.3)]"
           />
-          <VolumeInput
+          <input
             type="number"
             min="0"
             max="100"
             value={track.volume}
             onChange={handleVolumeInputChange}
             onBlur={handleVolumeInputBlur}
+            className="w-[38px] md:w-[45px] h-[24px] md:h-[28px] bg-white/10 border border-white/20 rounded text-white text-center text-[1.2rem] md:text-[1.4rem] outline-none focus:border-white/40 focus:bg-white/15 flex-shrink-0
+              [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0
+              [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0
+              [-moz-appearance:textfield]"
           />
-        </VolumeControl>
-      </TrackLeftSection>
-      <WaveformSection $trackColor={track.color} onMouseDown={onWaveformMouseDown}>
+        </div>
+      </div>
+      <div 
+        className="flex-1 relative h-full cursor-pointer overflow-hidden"
+        style={{ backgroundColor: `${track.color}54` }}
+        onMouseDown={onWaveformMouseDown}
+      >
         <WaveformDisplay track={track} />
-      </WaveformSection>
-    </TrackContainer>
+      </div>
+    </div>
   );
 };
 
