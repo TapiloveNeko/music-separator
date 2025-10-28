@@ -37,7 +37,10 @@ def load_demucs_model():
   global demucs_model
   if demucs_model is None:
     print(f"Loading Demucs model on {device}...")
+    # htdemucs_ftを使用する場合は、htdemucs_6s をコメントし、htdemucs_ftをコメント解除する
+    # htdemucs_ft の方が品質が良いが、ギターとピアノのみの抽出ができない上、読み込みが htdemucs_6s の4倍時間がかかる
     demucs_model = get_model('htdemucs_6s')
+    # demucs_model = get_model('htdemucs_ft')
     demucs_model.to(device)
     print("Demucs model loaded successfully!")
 
