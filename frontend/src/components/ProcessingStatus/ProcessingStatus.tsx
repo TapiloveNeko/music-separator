@@ -79,7 +79,7 @@ const ProcessingStatus: React.FC = () => {
       </div>
       
       {isError ? (
-        <div className="bg-danger/20 border border-danger/30 rounded-[10px] p-4 md:p-6 text-danger mt-4 md:mt-6 text-[1.2rem] md:text-[1.4rem]">
+        <div className="bg-danger/20 border border-danger/30 rounded-[10px] p-4 md:p-6 text-danger mt-4 md:mt-6 text-[1.5rem] md:text-[1.6rem]">
           <strong>エラーが発生しました</strong>
           <br />
           {processingStatus.error || '不明なエラーが発生しました'}

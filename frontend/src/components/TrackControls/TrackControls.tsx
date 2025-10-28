@@ -50,7 +50,7 @@ const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDow
   return (
     <div className="border-b border-white/5 relative flex items-center h-[70px] md:h-[80px]">
       <div className="track-left-section w-[120px] md:w-[200px] h-full p-2 md:p-4 bg-black/30 border-r border-white/5 flex flex-col justify-center">
-        <span className="text-[1.2rem] md:text-[1.6rem] font-medium truncate block">{track.name}</span>
+        <span className="text-[1.5rem] md:text-[1.6rem] font-medium truncate block">{track.name}</span>
         <div className="flex items-center gap-2 md:gap-3 mt-2 md:mt-3">
           <input
             type="range"
@@ -69,7 +69,7 @@ const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDow
             value={track.volume}
             onChange={handleVolumeInputChange}
             onBlur={handleVolumeInputBlur}
-            className="w-[38px] md:w-[45px] h-[24px] md:h-[28px] bg-white/10 border border-white/20 rounded text-white text-center text-[1.2rem] md:text-[1.4rem] outline-none focus:border-white/40 focus:bg-white/15 flex-shrink-0
+            className="w-[38px] md:w-[45px] h-[24px] md:h-[28px] bg-white/10 border border-white/20 rounded text-white text-center text-[1.5rem] md:text-[1.6rem] outline-none focus:border-white/40 focus:bg-white/15 flex-shrink-0
               [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0
               [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0
               [-moz-appearance:textfield]"

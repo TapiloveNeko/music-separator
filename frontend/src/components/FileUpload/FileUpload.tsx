@@ -39,7 +39,7 @@ const FileUpload: React.FC = () => {
       />
       
       {state.currentFile && (
-        <div className="mt-4 md:mt-6 p-4 md:p-6 bg-white/10 rounded-[10px] text-[1.2rem] md:text-[1.4rem] text-white max-w-full break-all">
+        <div className="mt-4 md:mt-6 p-4 md:p-6 bg-white/10 rounded-[10px] text-[1.5rem] md:text-[1.6rem] text-white max-w-full break-all">
           選択されたファイル: {state.currentFile.name}
           <br />
           サイズ: {(state.currentFile.size / 1024 / 1024).toFixed(2)} MB

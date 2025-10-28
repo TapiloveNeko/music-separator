@@ -105,7 +105,7 @@ const AppContent: React.FC = () => {
           <h1 className="text-[2.8rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
             曲から楽器を切り離す
           </h1>
-          <p className="text-[1.4rem] md:text-[1.8rem] font-light mt-2 md:mt-4 opacity-80">
+          <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-80">
             AI搭載のアルゴリズムで音楽を分割して表示
           </p>
         </header>
@@ -117,7 +117,7 @@ const AppContent: React.FC = () => {
             <h1 className="text-[2.8rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
               曲から楽器を切り離す
             </h1>
-            <p className="text-[1.4rem] md:text-[1.8rem] font-light mt-2 md:mt-4 opacity-80">
+            <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-80">
               AI搭載のアルゴリズムで音楽を分割して表示
             </p>
             <FileUpload />
@@ -127,8 +127,8 @@ const AppContent: React.FC = () => {
         
         {showSeparation && (
           <div className="w-full max-w-[1200px] mx-auto rounded-[20px] backdrop-blur-[10px]">
-            <div className="text-center md:text-right">
-              <span className="text-[1.4rem] md:text-[1.8rem] font-medium text-white break-all">{currentFile?.name}</span>
+            <div className="text-right md:text-right">
+              <span className="text-[1.5rem] md:text-[1.6rem] font-medium text-white break-all">{currentFile?.name}</span>
             </div>
 
             <div ref={tracksRef} className="mt-6 md:mt-12 relative">

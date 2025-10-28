@@ -185,37 +185,37 @@ const AudioPlayer: React.FC = () => {
         <div className="flex justify-between items-center w-full md:w-auto md:block">
           <div className="flex flex-col gap-1 text-left md:text-left">
             <div className="whitespace-nowrap">
-              <span className="text-[1.2rem] md:text-[1.4rem] text-white">音楽調: </span>
-              <span className="text-[1.2rem] md:text-[1.4rem] font-medium">{audioInfo?.key || '取得できませんでした'}</span>
+              <span className="text-[1.5rem] md:text-[1.6rem] text-white">音楽調: </span>
+              <span className="text-[1.5rem] md:text-[1.6rem] font-medium">{audioInfo?.key || '取得できませんでした'}</span>
             </div>
             <div className="whitespace-nowrap">
-              <span className="text-[1.2rem] md:text-[1.4rem] text-white">拍/分: </span>
-              <span className="text-[1.2rem] md:text-[1.4rem] font-medium">{audioInfo?.tempo || '取得できませんでした'}</span>
+              <span className="text-[1.5rem] md:text-[1.6rem] text-white">拍/分: </span>
+              <span className="text-[1.5rem] md:text-[1.6rem] font-medium">{audioInfo?.tempo || '取得できませんでした'}</span>
             </div>
           </div>
           <div className="whitespace-nowrap md:hidden text-right">
-            <span className="text-[1.2rem] text-white">フォーマット: </span>
-            <span className="text-[1.2rem] font-medium">mp3</span>
+            <span className="text-[1.5rem] text-white">フォーマット: </span>
+            <span className="text-[1.5rem] font-medium">mp3</span>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col items-center md:items-end gap-3 md:gap-6 w-full md:w-auto">
         <div className="hidden md:block">
-          <span className="text-[1.4rem] text-white">フォーマット: </span>
-          <span className="text-[1.4rem] font-medium">mp3</span>
+          <span className="text-[1.6rem] text-white">フォーマット: </span>
+          <span className="text-[1.6rem] font-medium">mp3</span>
         </div>
         <div className="flex flex-row md:flex-col items-center gap-3 md:gap-4 w-full md:w-auto">
           <button 
             onClick={resetApp}
-            className="flex-1 md:w-full bg-danger border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.4rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(231,76,60,0.3)] hover:translate-y-[2px] hover:shadow-none order-1 md:order-2"
+            className="flex-1 md:w-full bg-danger border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.5rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(231,76,60,0.3)] hover:translate-y-[2px] hover:shadow-none order-1 md:order-2"
           >
             新しい曲を選択
           </button>
           <button 
             onClick={exportTracks}
             disabled={!canExport}
-            className="flex-1 md:w-full bg-success border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.4rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(46,204,113,0.3)] hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none order-2 md:order-1"
+            className="flex-1 md:w-full bg-success border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.5rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(46,204,113,0.3)] hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none order-2 md:order-1"
           >
             保存
           </button>
