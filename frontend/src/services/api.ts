@@ -37,16 +37,10 @@ export const mixTracks = async (jobId: string, volumes: { [key: string]: number 
     responseType: 'blob',
   });
   
-  const contentDisposition = response.headers['content-disposition'];
-  
-  const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''(.+?)(?:;|$)/);
-  if (filenameStarMatch) {
-    const filename = decodeURIComponent(filenameStarMatch[1]);
-    return { blob: response.data, filename };
-  }
-  
-  const filenameMatch = contentDisposition.match(/filename=["']?([^"';]+)["']?/);
-  const filename = decodeURIComponent(filenameMatch[1]);
+  const contentDisposition = response.headers['content-disposition'] || '';
+  const filenameMatch = contentDisposition.match(/filename\*=UTF-8''(.+?)(?:;|$)/) || 
+                        contentDisposition.match(/filename=["']?([^"';]+)["']?/);
+  const filename = filenameMatch ? decodeURIComponent(filenameMatch[1]) : 'mixed.wav';
   
   return { blob: response.data, filename };
 };
