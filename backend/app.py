@@ -92,7 +92,7 @@ def demucs_separation(audio_data, job_id):
     info = get_audio_info(temp_file)
     processing_status[job_id]['progress'] = 15
     
-    waveform, sr = torchaudio.load(temp_file, backend='soundfile')
+    waveform, sr = torchaudio.load(temp_file)
     processing_status[job_id]['progress'] = 25
     
     if waveform.shape[0] == 1:
@@ -116,7 +116,7 @@ def demucs_separation(audio_data, job_id):
     for i, name in enumerate(demucs_model.sources):
       buffer = io.BytesIO()
       source_audio = normalize_audio(sources[i].cpu())
-      torchaudio.save(buffer, source_audio, sr, format='wav', encoding='PCM_S', bits_per_sample=16, backend='soundfile')
+      torchaudio.save(buffer, source_audio, sr, format='wav', encoding='PCM_S', bits_per_sample=16)
       tracks[name] = buffer.getvalue()
       processing_status[job_id]['progress'] = 70 + (i + 1) * 5
     
@@ -214,14 +214,14 @@ def mix_tracks(job_id):
   
   for track_name, track_data in processing_status[job_id]['tracks'].items():
     volume = volumes.get(track_name, 1.0)
-    waveform, _ = torchaudio.load(io.BytesIO(track_data), backend='soundfile')
+    waveform, _ = torchaudio.load(io.BytesIO(track_data))
     waveform = waveform * volume
     mixed_audio = waveform if mixed_audio is None else mixed_audio + waveform
   
   mixed_audio = normalize_audio(mixed_audio)
   
   buffer = io.BytesIO()
-  torchaudio.save(buffer, mixed_audio, sr, format='wav', encoding='PCM_S', bits_per_sample=16, backend='soundfile')
+  torchaudio.save(buffer, mixed_audio, sr, format='wav', encoding='PCM_S', bits_per_sample=16)
   buffer.seek(0)
   
   original_filename = processing_status[job_id]['filename']
