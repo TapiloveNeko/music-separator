@@ -3,12 +3,11 @@ import styled from 'styled-components';
 import { useAudio } from '../../contexts/AudioContext';
 
 const UploadContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-content: start center;
   min-height: 400px;
   text-align: center;
+  margin: 4rem 0 0;
 `;
 
 const UploadButton = styled.button`
@@ -22,10 +21,9 @@ const UploadButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 8px 25px rgba(142, 68, 173, 0.3);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.8rem;
-  margin: 0 auto;
 
   &:hover {
     transform: translateY(2px);
@@ -48,7 +46,7 @@ const FileInput = styled.input`
 `;
 
 const FileInfo = styled.div`
-  margin-top: 1.6rem;
+  margin: 1.6rem 0 0;
   padding: 1.6rem;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;

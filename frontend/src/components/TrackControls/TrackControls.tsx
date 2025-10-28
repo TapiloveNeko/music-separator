@@ -5,9 +5,7 @@ import WaveformDisplay from '../WaveformDisplay';
 import { useAudio } from '../../contexts/AudioContext';
 
 const TrackContainer = styled.div`
-  margin-bottom: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  padding: 0;
   position: relative;
   overflow: hidden;
   display: flex;
@@ -32,7 +30,7 @@ const VolumeControl = styled.div`
   display: flex;
   align-items: center;
   gap: 0.8rem;
-  margin-top: 0.8rem;
+  margin: 0.8rem 0 0;
 `;
 
 const VolumeSlider = styled.input`
@@ -75,7 +73,6 @@ const VolumeInput = styled.input`
   text-align: center;
   font-size: 1.4rem;
   outline: none;
-  padding: 0;
 
   &:focus {
     border-color: rgba(255, 255, 255, 0.4);

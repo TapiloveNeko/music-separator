@@ -39,14 +39,14 @@ const AppContainer = styled.div`
 
 const Header = styled.header`
   text-align: center;
-  padding: 3.2rem 1.6rem;
+  margin: 8rem 0 0;
   backdrop-filter: blur(10px);
 `;
 
 const MainTitle = styled.h1`
   font-size: 4rem;
   font-weight: 700;
-  margin-bottom: 0.8rem;
+  margin: 0 0 0.8rem;
   background: #ffffff;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -56,29 +56,26 @@ const MainTitle = styled.h1`
 const Subtitle = styled.p`
   font-size: 1.8rem;
   font-weight: 300;
+  margin: 0;
   opacity: 0.8;
 `;
 
 const MainContent = styled.main`
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   padding: 3.2rem;
 `;
 
 const SeparationSection = styled.div`
   width: 100%;
   max-width: 1200px;
+  margin: 0 auto;
   border-radius: 20px;
-  padding: 3.2rem;
   backdrop-filter: blur(10px);
 `;
 
 const FileInfo = styled.div`
   text-align: right;
-  margin-bottom: 3.2rem;
+  margin: 0 0 3.2rem;
 `;
 
 const FileName = styled.span`
@@ -88,7 +85,7 @@ const FileName = styled.span`
 `;
 
 const TracksContainer = styled.div`
-  margin-bottom: 3.2rem;
+  margin: 0 0 3.2rem;
   position: relative;
 `;
 

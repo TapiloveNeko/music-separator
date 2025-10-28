@@ -3,20 +3,17 @@ import styled, { keyframes } from 'styled-components';
 import { useAudio } from '../../contexts/AudioContext';
 
 const ProcessingContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-content: center;
   min-height: 400px;
   text-align: center;
-  padding: 4.8rem;
 `;
 
 const ProgressCircle = styled.div`
   width: 120px;
   height: 120px;
   position: relative;
-  margin-bottom: 3.2rem;
+  margin: 0 auto 3.2rem;
 `;
 
 const SVGCircle = styled.svg`
@@ -47,10 +44,7 @@ const ProgressTextContainer = styled.div`
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
 `;
 
 const ProgressText = styled.span`
@@ -68,7 +62,7 @@ const PercentSymbol = styled.span`
 const ProcessingText = styled.p`
   font-size: 1.8rem;
   font-weight: 300;
-  margin-bottom: 1.6rem;
+  margin: 0 0 1.6rem;
 `;
 
 const pulse = keyframes`
@@ -87,7 +81,7 @@ const ErrorMessage = styled.div`
   border-radius: 10px;
   padding: 1.6rem;
   color: #e74c3c;
-  margin-top: 1.6rem;
+  margin: 1.6rem 0 0;
 `;
 
 const ProcessingStatus: React.FC = () => {

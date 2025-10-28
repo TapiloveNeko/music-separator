@@ -8,8 +8,9 @@ const PlayerContainer = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 3.2rem;
-  padding-top: 3.2rem;
+  margin: 3.2rem 0 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3.2rem 0 0;
 `;
 
 const PlaybackControls = styled.div`
@@ -28,9 +29,8 @@ const ControlButton = styled.button`
   font-size: 2rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-content: center;
   box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
 
   &:hover {
@@ -65,11 +65,7 @@ const TimeDisplay = styled.input`
   }
 `;
 
-const MusicInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-`;
+const MusicInfo = styled.div``;
 
 const InfoLabel = styled.span`
   font-size: 1.4rem;
@@ -82,9 +78,8 @@ const InfoValue = styled.span`
 `;
 
 const ExportSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  display: grid;
+  justify-items: end;
   gap: 1.6rem;
 `;
 
