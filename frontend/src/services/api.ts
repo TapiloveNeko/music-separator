@@ -32,6 +32,25 @@ export const downloadTrack = async (jobId: string, track: string): Promise<Blob>
   return response.data;
 };
 
+export const mixTracks = async (jobId: string, volumes: { [key: string]: number }): Promise<{ blob: Blob; filename: string }> => {
+  const response = await api.post(`/mix/${jobId}`, { volumes }, {
+    responseType: 'blob',
+  });
+  
+  const contentDisposition = response.headers['content-disposition'];
+  
+  const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''(.+?)(?:;|$)/);
+  if (filenameStarMatch) {
+    const filename = decodeURIComponent(filenameStarMatch[1]);
+    return { blob: response.data, filename };
+  }
+  
+  const filenameMatch = contentDisposition.match(/filename=["']?([^"';]+)["']?/);
+  const filename = decodeURIComponent(filenameMatch[1]);
+  
+  return { blob: response.data, filename };
+};
+
 export const healthCheck = async (): Promise<boolean> => {
   try {
     const response = await api.get('/health');

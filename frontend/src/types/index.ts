@@ -43,5 +43,7 @@ export interface AppState {
   isPlaying: boolean;
   currentTime: number;
   duration: number;
+  dragPosition: number | null;
+  isDragging: boolean;
 }
 

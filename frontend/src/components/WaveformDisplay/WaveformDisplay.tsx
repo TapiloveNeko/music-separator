@@ -23,8 +23,8 @@ interface WaveformDisplayProps {
 const WaveformDisplay: React.FC<WaveformDisplayProps> = ({ track }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { state, seekTo } = useAudio();
-  const { duration } = state;
+  const { state, seekTo, setDragPosition, setIsDragging } = useAudio();
+  const { duration, dragPosition, isDragging } = state;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -68,30 +68,48 @@ const WaveformDisplay: React.FC<WaveformDisplayProps> = ({ track }) => {
     ctx.lineTo(0, centerY);
     ctx.closePath();
     ctx.fill();
-  }, [track.waveform, track.color, track.volume]);
+
+    if (isDragging && dragPosition !== null) {
+      const dragX = (dragPosition / duration) * width;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(dragX, 0);
+      ctx.lineTo(dragX, height);
+      ctx.stroke();
+    }
+  }, [track.waveform, track.color, track.volume, duration, dragPosition, isDragging]);
 
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas || duration === 0) return;
 
-    const updateTimeFromPosition = (clientX: number) => {
+    const getTimeFromPosition = (clientX: number): number => {
       const rect = canvas.getBoundingClientRect();
       const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
       const ratio = x / rect.width;
-      const time = ratio * duration;
-      seekTo(time);
+      return ratio * duration;
     };
+
+    const initialTime = getTimeFromPosition(e.clientX);
+    setDragPosition(initialTime);
+    setIsDragging(true);
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
-      updateTimeFromPosition(moveEvent.clientX);
+      const time = getTimeFromPosition(moveEvent.clientX);
+      setDragPosition(time);
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (moveEvent: MouseEvent) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      
+      const time = getTimeFromPosition(moveEvent.clientX);
+      seekTo(time);
+      
+      setIsDragging(false);
+      setDragPosition(null);
     };
-
-    updateTimeFromPosition(e.clientX);
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);

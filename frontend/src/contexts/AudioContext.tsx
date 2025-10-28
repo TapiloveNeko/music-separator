@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
 import { AppState, ProcessingStatus, AudioTrack, AudioInfo } from '../types';
-import { uploadFile, getStatus, downloadTrack } from '../services/api';
+import { uploadFile, getStatus, downloadTrack, mixTracks } from '../services/api';
 
 interface AudioContextType {
   state: AppState;
@@ -10,10 +10,12 @@ interface AudioContextType {
   seekTo: (time: number) => void;
   exportTracks: () => Promise<void>;
   resetApp: () => void;
+  setDragPosition: (position: number | null) => void;
+  setIsDragging: (isDragging: boolean) => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
-// htdemucs_ftを使用する場合はguitarとpianoをコメントアウトする
+
 const initialTracks: AudioTrack[] = [
   { id: 'vocals', name: 'ボーカル', color: '#f1c40f', volume: 100, waveform: [] },
   { id: 'guitar', name: 'ギター', color: '#e74c3c', volume: 100, waveform: [] },
@@ -35,6 +37,8 @@ const initialState: AppState = {
   isPlaying: false,
   currentTime: 0,
   duration: 0,
+  dragPosition: null,
+  isDragging: false,
 };
 
 type AudioAction =
@@ -45,6 +49,8 @@ type AudioAction =
   | { type: 'SET_PLAYING'; payload: boolean }
   | { type: 'SET_CURRENT_TIME'; payload: number }
   | { type: 'SET_DURATION'; payload: number }
+  | { type: 'SET_DRAG_POSITION'; payload: number | null }
+  | { type: 'SET_IS_DRAGGING'; payload: boolean }
   | { type: 'RESET' };
 
 const audioReducer = (state: AppState, action: AudioAction): AppState => {
@@ -70,6 +76,10 @@ const audioReducer = (state: AppState, action: AudioAction): AppState => {
       return { ...state, currentTime: action.payload };
     case 'SET_DURATION':
       return { ...state, duration: action.payload };
+    case 'SET_DRAG_POSITION':
+      return { ...state, dragPosition: action.payload };
+    case 'SET_IS_DRAGGING':
+      return { ...state, isDragging: action.payload };
     case 'RESET':
       return initialState;
     default:
@@ -81,10 +91,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [state, dispatch] = useReducer(audioReducer, initialState);
   
   const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceNodesRef = useRef<Map<string, AudioBufferSourceNode>>(new Map());
+  const audioElementsRef = useRef<Map<string, HTMLAudioElement>>(new Map());
+  const mediaSourceNodesRef = useRef<Map<string, MediaElementAudioSourceNode>>(new Map());
   const gainNodesRef = useRef<Map<string, GainNode>>(new Map());
-  const startTimeRef = useRef<number>(0);
-  const pauseTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number | undefined>(undefined);
   const tracksRef = useRef<AudioTrack[]>([]);
   const isPlayingRef = useRef<boolean>(false);
@@ -108,19 +117,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const stopAllTracks = useCallback(() => {
-    const audioContext = audioContextRef.current;
-    if (!audioContext) return;
-
-    const currentPos = audioContext.currentTime - startTimeRef.current;
-    pauseTimeRef.current = Math.max(0, currentPos);
-
-    sourceNodesRef.current.forEach(source => {
-      try {
-        source.stop();
-      } catch (e) {}
+    audioElementsRef.current.forEach(audio => {
+      audio.pause();
     });
-
-    sourceNodesRef.current.clear();
   }, []);
 
   const playAllTracks = useCallback(() => {
@@ -131,51 +130,17 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audioContext.resume();
     }
 
-    sourceNodesRef.current.forEach(source => {
-      try {
-        source.stop();
-      } catch (e) {}
+    audioElementsRef.current.forEach(audio => {
+      audio.play().catch(e => console.error('Play error:', e));
     });
-    sourceNodesRef.current.clear();
-
-    const offset = pauseTimeRef.current;
-
-    tracksRef.current.forEach(track => {
-      if (!track.audioBuffer) return;
-
-      const source = audioContext.createBufferSource();
-      const gainNode = audioContext.createGain();
-      
-      source.buffer = track.audioBuffer;
-      gainNode.gain.value = track.volume / 100;
-      
-      source.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      source.start(0, offset);
-      
-      sourceNodesRef.current.set(track.id, source);
-      gainNodesRef.current.set(track.id, gainNode);
-
-      source.onended = () => {
-        if (isPlayingRef.current) {
-          dispatch({ type: 'SET_PLAYING', payload: false });
-          pauseTimeRef.current = 0;
-          dispatch({ type: 'SET_CURRENT_TIME', payload: 0 });
-        }
-      };
-    });
-
-    startTimeRef.current = audioContext.currentTime - offset;
   }, []);
 
   const startTimeUpdate = useCallback(() => {
     const updateTime = () => {
-      const audioContext = audioContextRef.current;
-      if (!audioContext) return;
+      const firstAudio = Array.from(audioElementsRef.current.values())[0];
+      if (!firstAudio) return;
 
-      const currentTime = audioContext.currentTime - startTimeRef.current;
-      dispatch({ type: 'SET_CURRENT_TIME', payload: currentTime });
+      dispatch({ type: 'SET_CURRENT_TIME', payload: firstAudio.currentTime });
 
       animationFrameRef.current = requestAnimationFrame(updateTime);
     };
@@ -213,56 +178,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [state.tracks]);
 
   const seekTo = useCallback((time: number) => {
-    const wasPlaying = isPlayingRef.current;
     const clampedTime = Math.max(0, Math.min(time, state.duration));
     
-    sourceNodesRef.current.forEach(source => {
-      try {
-        source.stop();
-      } catch (e) {}
+    // すべてのaudio要素の再生位置を変更
+    audioElementsRef.current.forEach(audio => {
+      audio.currentTime = clampedTime;
     });
-    sourceNodesRef.current.clear();
     
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-    
-    pauseTimeRef.current = clampedTime;
     dispatch({ type: 'SET_CURRENT_TIME', payload: clampedTime });
-    
-    if (!wasPlaying) return;
-    
-    const audioContext = audioContextRef.current;
-    if (!audioContext) return;
-  
-    tracksRef.current.forEach(track => {
-      if (!track.audioBuffer) return;
-  
-      const source = audioContext.createBufferSource();
-      const gainNode = gainNodesRef.current.get(track.id) || audioContext.createGain();
-      
-      source.buffer = track.audioBuffer;
-      gainNode.gain.value = track.volume / 100;
-      
-      source.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      source.start(0, clampedTime);
-      
-      sourceNodesRef.current.set(track.id, source);
-      gainNodesRef.current.set(track.id, gainNode);
-    });
-  
-    startTimeRef.current = audioContext.currentTime - clampedTime;
-    
-    const updateTime = () => {
-      if (!isPlayingRef.current || !audioContextRef.current) return;
-      const currentTime = audioContextRef.current.currentTime - startTimeRef.current;
-      dispatch({ type: 'SET_CURRENT_TIME', payload: currentTime });
-      animationFrameRef.current = requestAnimationFrame(updateTime);
-    };
-    
-    animationFrameRef.current = requestAnimationFrame(updateTime);
   }, [state.duration]);
 
   const uploadAudioFile = async (file: File) => {
@@ -356,15 +279,37 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const loadSeparatedTracks = async (jobId: string) => {
     try {
+      const audioContext = audioContextRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
       let maxDuration = 0;
 
       for (const track of state.tracks) {
         const audioBlob = await downloadTrack(jobId, track.id);
-        const arrayBuffer = await audioBlob.arrayBuffer();
-        const audioContext = audioContextRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
-        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const audioUrl = URL.createObjectURL(audioBlob);
         
-        maxDuration = Math.max(maxDuration, audioBuffer.duration);
+        const audio = new Audio(audioUrl);
+        audio.crossOrigin = 'anonymous';
+        
+        await new Promise<void>((resolve, reject) => {
+          audio.addEventListener('loadedmetadata', () => resolve(), { once: true });
+          audio.addEventListener('error', reject, { once: true });
+          audio.load();
+        });
+        
+        maxDuration = Math.max(maxDuration, audio.duration);
+        
+        const mediaSource = audioContext.createMediaElementSource(audio);
+        const gainNode = audioContext.createGain();
+        gainNode.gain.value = track.volume / 100;
+        
+        mediaSource.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        audioElementsRef.current.set(track.id, audio);
+        mediaSourceNodesRef.current.set(track.id, mediaSource);
+        gainNodesRef.current.set(track.id, gainNode);
+        
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         
         dispatch({
           type: 'UPDATE_TRACK',
@@ -372,6 +317,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             trackId: track.id,
             updates: { audioBuffer, waveform: generateWaveform(audioBuffer) },
           },
+        });
+        
+        audio.addEventListener('ended', () => {
+          if (isPlayingRef.current) {
+            dispatch({ type: 'SET_PLAYING', payload: false });
+            dispatch({ type: 'SET_CURRENT_TIME', payload: 0 });
+          }
         });
       }
 
@@ -403,7 +355,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const togglePlayback = () => {
-    const hasLoadedTracks = state.tracks.some(track => track.audioBuffer);
+    const hasLoadedTracks = audioElementsRef.current.size > 0;
     
     if (!hasLoadedTracks) {
       console.warn('No audio tracks loaded yet');
@@ -424,17 +376,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!state.processingStatus.jobId) return;
     
     try {
-      for (const track of state.tracks) {
-        const audioBlob = await downloadTrack(state.processingStatus.jobId, track.id);
-        const url = URL.createObjectURL(audioBlob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${track.name}_track.wav`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
+      const volumes: { [key: string]: number } = {};
+      state.tracks.forEach(track => {
+        volumes[track.id] = track.volume / 100;
+      });
+
+      const { blob, filename } = await mixTracks(state.processingStatus.jobId, volumes);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Export failed:', error);
     }
@@ -445,10 +400,27 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       stopAllTracks();
     }
     
-    pauseTimeRef.current = 0;
-    startTimeRef.current = 0;
+    audioElementsRef.current.forEach(audio => {
+      audio.pause();
+      audio.src = '';
+      if (audio.src) {
+        URL.revokeObjectURL(audio.src);
+      }
+    });
+    
+    audioElementsRef.current.clear();
+    mediaSourceNodesRef.current.clear();
+    gainNodesRef.current.clear();
     
     dispatch({ type: 'RESET' });
+  };
+
+  const setDragPosition = (position: number | null) => {
+    dispatch({ type: 'SET_DRAG_POSITION', payload: position });
+  };
+
+  const setIsDragging = (isDragging: boolean) => {
+    dispatch({ type: 'SET_IS_DRAGGING', payload: isDragging });
   };
 
   return (
@@ -461,6 +433,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         seekTo,
         exportTracks,
         resetApp,
+        setDragPosition,
+        setIsDragging,
       }}
     >
       {children}
