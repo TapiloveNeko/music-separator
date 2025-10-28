@@ -23,7 +23,7 @@ const FileUpload: React.FC = () => {
       <button 
         onClick={handleUploadClick} 
         disabled={isProcessing}
-        className="bg-secondary border-none rounded-[15px] py-6 px-12 md:py-10 md:px-20 text-[1.6rem] md:text-[2rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 md:gap-3 hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+        className="bg-secondary border-none rounded-[15px] py-6 px-12 md:py-10 md:px-20 text-[1.8rem] md:text-[2rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 md:gap-3 hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
       >
         <span className="text-[2rem] md:text-[2.4rem]">📁</span>
         ファイルを選択
