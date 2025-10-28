@@ -19,7 +19,7 @@ const FileUpload: React.FC = () => {
   const isProcessing = state.processingStatus.status !== 'idle';
 
   return (
-    <div className="flex flex-col items-center min-h-[300px] md:min-h-[400px] text-center mt-8 md:mt-16">
+    <div className="flex flex-col items-center text-center mt-12 md:mt-16">
       <button 
         onClick={handleUploadClick} 
         disabled={isProcessing}
