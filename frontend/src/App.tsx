@@ -102,7 +102,7 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       {!showUpload && (
         <header className="text-center pt-16 md:pt-32 px-8 md:px-12 backdrop-blur-[10px]">
-          <h1 className="text-[2.8rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
+          <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
             曲から楽器を切り離す
           </h1>
           <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-80">
@@ -114,7 +114,7 @@ const AppContent: React.FC = () => {
       <main className={`flex-1 p-8 md:p-12 ${showUpload ? 'flex flex-col justify-center items-center' : ''}`}>
         {showUpload && (
           <div className="flex flex-col items-center text-center">
-            <h1 className="text-[2.8rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
+            <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
               曲から楽器を切り離す
             </h1>
             <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-80">
