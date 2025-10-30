@@ -87,7 +87,7 @@ yarn add -D @types/xxx
 npm の場合は `yarn` を `npm run` / `npm install` 系に読み替えてください。
 
 ## 5. バックエンド（Flask）との連携
-- デフォルトの API ベースURL は `http://localhost:5000` を想定しています。
+- デフォルトの API ベースURL は `http://localhost:7860` を想定しています。
 - 値は `src/config/api.ts` で変更できます。
 - 起動手順（参考）：
   ```bash
@@ -122,7 +122,7 @@ CRA の仕様により、`.env` を利用する場合は `REACT_APP_` プレフ�
 
 例：
 ```env
-REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost:7860
 ```
 コード側では `process.env.REACT_APP_API_URL` で参照できます。
 
