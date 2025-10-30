@@ -15,11 +15,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Hugging Face Spaces: ポート7860を公開（HF Spacesのデフォルトポート）
-EXPOSE 7860
+# Flaskのデフォルトポート5000を公開
+EXPOSE 5000
 
-# Hugging Face Spaces: 環境変数でポート7860を指定
-ENV PORT=7860
+# 環境変数でポート5000を指定
+ENV PORT=5000
 
 # Run the application
 CMD ["python", "app.py"]

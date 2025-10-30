@@ -6,7 +6,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "7860:7860"
+      - "5000:5000"
     volumes:
       - ./backend:/app
     environment:
@@ -23,7 +23,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - REACT_APP_API_URL=http://localhost:7860
+      - REACT_APP_API_URL=http://localhost:5000
     command: yarn start
 
   nginx:

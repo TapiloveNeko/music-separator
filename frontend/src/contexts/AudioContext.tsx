@@ -16,6 +16,8 @@ interface AudioContextType {
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
+// htdemucs_ftを使用する場合は、guitar と piano をコメントする
+// htdemucs_ft の方が品質が良いが、ギターとピアノのみの抽出ができない上、読み込みが htdemucs_6s の4倍時間がかかる
 const initialTracks: AudioTrack[] = [
   { id: 'vocals', name: 'ボーカル', color: '#f1c40f', volume: 100, waveform: [] },
   { id: 'guitar', name: 'ギター', color: '#e74c3c', volume: 100, waveform: [] },

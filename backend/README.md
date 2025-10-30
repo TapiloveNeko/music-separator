@@ -7,7 +7,7 @@ sdk: docker
 app_port: 7860
 pinned: false
 ---
-<!-- 上記はHugging Face Spaces固有の記述 -->
+<!-- 上記はHugging Face Spaces固有の記述（HF Spacesは7860固定、ローカル開発は5000） -->
 
 # バックエンド開発ガイド（Python + Flask + Demucs）
 
@@ -99,8 +99,8 @@ python app.py
 ```
 
 起動後、以下のURLでアクセス可能：
-- ヘルスチェック: `http://localhost:7860/health`
-- API ベースURL: `http://localhost:7860`
+- ヘルスチェック: `http://localhost:5000/health`
+- API ベースURL: `http://localhost:5000`
 
 ## 5. API エンドポイント
 
@@ -204,19 +204,21 @@ export FLASK_ENV=development
 # デバッグモード
 export FLASK_DEBUG=1
 
-# ポート変更（デフォルト: 7860、Hugging Face Spacesでは7860）
+# ポート変更（デフォルト: 5000）
 export PORT=5001
 ```
 
 ## 9. フロントエンドとの連携
 
-- フロントエンドは `http://localhost:7860` にAPIリクエストを送信
+- フロントエンドは `http://localhost:5000` にAPIリクエストを送信
 - CORS設定により、`localhost:3000` からのアクセスを許可
 - ファイルアップロード → 非同期処理 → 結果取得の流れ
 
 ## 10. 本番環境へのデプロイ
 
 このバックエンドは、様々なホスティングサービスにデプロイできます。
+
+**注意**: Hugging Face Spacesにデプロイする場合は、ポートを7860に戻す必要があります（HF Spacesのデフォルトポート）。ローカル開発ではFlaskのデフォルト5000を使用しています。
 
 ### 10.1 デプロイ構成の例
 ```
@@ -256,7 +258,7 @@ app_port: 7860
 ---
 ```
 
-**デフォルトポート**: 7860
+**デフォルトポート**: 7860（Hugging Face Spaces専用。ローカルでは5000を使用）
 
 #### オプション2: Render（簡単、無料枠あり）
 
@@ -322,7 +324,7 @@ cd music-separator/backend
 sudo docker build -t music-separator .
 
 # コンテナを起動
-sudo docker run -d -p 7860:7860 --name music-separator music-separator
+sudo docker run -d -p 5000:5000 --name music-separator music-separator
 
 # nginx等でリバースプロキシ設定（SSL対応推奨）
 ```
@@ -333,7 +335,7 @@ sudo docker run -d -p 7860:7860 --name music-separator music-separator
 
 | 環境変数 | 説明 | デフォルト |
 |---------|------|-----------|
-| `PORT` | APIサーバーのポート | 7860 |
+| `PORT` | APIサーバーのポート | 5000 |
 | `FLASK_ENV` | 実行環境 | production |
 | `FLASK_DEBUG` | デバッグモード | False（本番はFalse推奨） |
 
@@ -391,7 +393,7 @@ curl https://your-backend-url.example.com/health
 # ローカルでDockerビルドをテスト
 cd backend
 docker build -t music-separator .
-docker run -p 7860:7860 music-separator
+docker run -p 5000:5000 music-separator
 ```
 
 #### CORSエラーが発生する場合

@@ -242,4 +242,4 @@ def clear_job(job_id):
 
 if __name__ == '__main__':
   load_demucs_model()
-  app.run(debug=True, host='0.0.0.0', port=int(os.environ.get("PORT", 7860)), threaded=True)
+  app.run(debug=True, host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), threaded=True)
