@@ -12,7 +12,17 @@ const AppContent: React.FC = () => {
   const [lastSeekTime, setLastSeekTime] = React.useState<number | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [containerWidth, setContainerWidth] = React.useState(0);
+  const [particlesVisible, setParticlesVisible] = React.useState(false);
   const tracksRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const timer = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setParticlesVisible(true);
+      });
+    });
+    return () => cancelAnimationFrame(timer);
+  }, []);
 
   const showUpload = processingStatus.status === 'idle' || processingStatus.status === 'error';
   const showSeparation = processingStatus.status === 'completed';
@@ -100,8 +110,26 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div 
+          className={`absolute top-[15%] left-[18%] w-64 h-64 md:w-80 md:h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl animate-puff-puff transition-opacity duration-300 ${
+            particlesVisible ? 'opacity-40' : 'opacity-0'
+          }`}
+        />
+        <div 
+          className={`absolute bottom-[10%] left-[10%] w-72 h-72 md:w-96 md:h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl animate-puff-puff-slow delay-700 transition-opacity duration-300 ${
+            particlesVisible ? 'opacity-40' : 'opacity-0'
+          }`}
+        />
+        <div 
+          className={`absolute bottom-[16%] right-[10%] w-80 h-80 md:w-[28rem] md:h-[28rem] bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl animate-puff-puff-slower delay-1000 transition-opacity duration-300 ${
+            particlesVisible ? 'opacity-40' : 'opacity-0'
+          }`}
+        />
+      </div>
+
       {!showUpload && (
-        <header className="text-center pt-16 md:pt-32 px-8 md:px-12 backdrop-blur-[10px]">
+        <header className="relative z-10 text-center pt-16 md:pt-32 px-8 md:px-12 backdrop-blur-[10px]">
           <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
             曲から楽器を切り離す
           </h1>
@@ -111,7 +139,7 @@ const AppContent: React.FC = () => {
         </header>
       )}
 
-      <main className={`flex-1 p-8 md:p-12 ${showUpload ? 'flex flex-col justify-center items-center' : ''}`}>
+      <main className={`relative z-10 flex-1 p-8 md:p-12 ${showUpload ? 'flex flex-col justify-center items-center' : ''}`}>
         {showUpload && (
           <div className="flex flex-col items-center text-center">
             <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
