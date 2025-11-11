@@ -37,7 +37,7 @@ const ProcessingStatus: React.FC = () => {
   const strokeDashoffset = circumference * (1 - displayProgress / 100);
 
   return (
-    <div className="grid place-content-center min-h-[300px] md:min-h-[400px] text-center">
+    <div className="grid place-content-center text-center mt-[150px]">
       <div className="w-[100px] md:w-[120px] h-[100px] md:h-[120px] relative mx-auto mb-8 md:mb-12">
         <svg 
           className="rotate-[-90deg] w-full h-full drop-shadow-[0_0_8px_rgba(255,255,255,0.6)]"
