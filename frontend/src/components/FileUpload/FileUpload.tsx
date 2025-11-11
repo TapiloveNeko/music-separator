@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useAudio } from '../../contexts/AudioContext';
 
 const FileUpload: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadAudioFile, state } = useAudio();
   const [isDragging, setIsDragging] = useState(false);
+  const dragCounterRef = useRef(0);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -38,13 +39,45 @@ const FileUpload: React.FC = () => {
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    setIsDragging(false);
   };
+
+  useEffect(() => {
+    const handleWindowDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounterRef.current++;
+      if (e.dataTransfer?.types.includes('Files')) {
+        setIsDragging(true);
+      }
+    };
+
+    const handleWindowDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounterRef.current--;
+      if (dragCounterRef.current === 0) {
+        setIsDragging(false);
+      }
+    };
+
+    const handleWindowDrop = (e: DragEvent) => {
+      e.preventDefault();
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+    };
+
+    window.addEventListener('dragenter', handleWindowDragEnter);
+    window.addEventListener('dragleave', handleWindowDragLeave);
+    window.addEventListener('drop', handleWindowDrop);
+
+    return () => {
+      window.removeEventListener('dragenter', handleWindowDragEnter);
+      window.removeEventListener('dragleave', handleWindowDragLeave);
+      window.removeEventListener('drop', handleWindowDrop);
+    };
+  }, []);
 
   const isProcessing = state.processingStatus.status !== 'idle';
 
@@ -56,15 +89,15 @@ const FileUpload: React.FC = () => {
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onClick={handleUploadClick}
-        className={`hidden md:block md:mt-12 w-full border-2 border-dashed rounded-[15px] p-8 md:p-16 text-center cursor-pointer transition-all duration-300 ${
+        className={`hidden md:block md:mt-12 w-[550px] mx-auto border-2 border-dashed rounded-[15px] p-8 md:p-16 text-center cursor-pointer transition-all duration-300 ${
           isDragging
-            ? 'border-white/80 bg-white/10 scale-105'
+            ? 'border-white/80 bg-white/10'
             : 'border-white/30 hover:border-white/60 hover:bg-white/5'
         } ${isProcessing ? 'opacity-60 cursor-not-allowed' : ''}`}
       >
         <div className="text-6xl md:text-8xl mb-4">🎼</div>
         <p className="text-white text-[1.5rem] md:text-[1.8rem] mb-2 font-medium">
-          {isDragging ? 'ここにドロップしてください' : 'クリックまたはドラッグ&ドロップ'}
+          {isDragging ? 'ここにドロップしてください' : 'クリックまたはドラッグ&ドロップでファイルを選択'}
         </p>
         <p className="text-white/50 text-[1.2rem] md:text-[1.4rem]">
           音声ファイル（WAV / MP3 / M4A / FLAC / OGG / AAC 対応）
@@ -74,9 +107,9 @@ const FileUpload: React.FC = () => {
       <button 
         onClick={handleUploadClick} 
         disabled={isProcessing}
-        className="mt-12 bg-secondary border-none rounded-[15px] py-8 px-16 md:py-10 md:px-20 text-[1.8rem] md:text-[2rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 md:gap-3 hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+        className="md:hidden mt-12 bg-secondary border-none rounded-[15px] py-8 px-16 text-[1.8rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
       >
-        <span className="text-[2rem] md:text-[2.4rem]">📁</span>
+        <span className="text-[2rem]">📁</span>
         ファイルを選択
       </button>
       
