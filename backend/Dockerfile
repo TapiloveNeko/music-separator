@@ -22,4 +22,4 @@ EXPOSE 7860
 ENV PORT=7860
 
 # Run the application
-CMD ["python", "app.py"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
