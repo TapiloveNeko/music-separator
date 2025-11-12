@@ -35,10 +35,10 @@ source venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 
 # サーバー起動（開発用）
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
 
 # サーバー起動（本番用）
-gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 ```
 
 ### コマンドの確認方法
@@ -47,14 +47,14 @@ gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
 ```bash
 cd /Users/keisuke.ohta/music-separator/backend
 source venv/bin/activate
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
 ```
 
 #### gunicorn の確認
 ```bash
 cd /Users/keisuke.ohta/music-separator/backend
 source venv/bin/activate
-gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 ```
 
 ## 使用技術

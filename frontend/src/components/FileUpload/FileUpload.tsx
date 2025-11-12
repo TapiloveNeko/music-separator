@@ -24,9 +24,9 @@ const FileUpload: React.FC = () => {
     
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      const isAudio = file.type.includes('audio') || file.name.match(/\.(wav|mp3|m4a|flac|ogg|aac)$/i);
+      const isAudio = file.type.includes('audio') || file.type.includes('video') || file.name.match(/\.(wav|mp3|m4a|flac|ogg|aac|mp4)$/i);
       if (!isAudio) {
-        alert('音声ファイル（WAV、MP3、M4A、FLAC、OGG、AAC）をアップロードしてください。');
+        alert('音声ファイル（WAV、MP3、M4A、FLAC、OGG、AAC、MP4）をアップロードしてください。');
         return;
       }
       uploadAudioFile(file);
@@ -100,7 +100,7 @@ const FileUpload: React.FC = () => {
           {isDragging ? 'ここにドロップしてください' : 'クリックまたはドラッグ&ドロップでファイルを選択'}
         </p>
         <p className="text-white/50 text-[1.2rem] md:text-[1.4rem]">
-          音声ファイル（WAV / MP3 / M4A / FLAC / OGG / AAC 対応）
+          音声ファイル（WAV / MP3 / M4A / FLAC / OGG / AAC / MP4 対応）
         </p>
       </div>
 
@@ -116,7 +116,7 @@ const FileUpload: React.FC = () => {
       <input
         ref={fileInputRef}
         type="file"
-        accept="audio/*"
+        accept="audio/*,video/mp4"
         onChange={handleFileSelect}
         disabled={isProcessing}
         className="hidden"
