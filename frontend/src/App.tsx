@@ -102,10 +102,10 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div 
-          className="absolute top-1/2 left-1/2 w-64 h-64 md:w-80 md:h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-rotate-pink"
+          className="absolute top-1/2 left-1/2 w-64 h-64 md:w-80 md:h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-rotate-pink"
         />
         <div 
-          className="absolute top-1/2 left-1/2 w-64 h-64 md:w-80 md:h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-rotate-blue"
+          className="absolute top-1/2 left-1/2 w-64 h-64 md:w-80 md:h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-rotate-blue"
         />
       </div>
 
