@@ -16,21 +16,44 @@ module.exports = {
         mono: ['source-code-pro', 'Menlo', 'Monaco', 'Consolas', 'Courier New', 'monospace'],
       },
       keyframes: {
-        'puff-puff': {
-          '0%, 100%': { 
-            transform: 'scale(1)',
-            opacity: '0.35'
+        'rotate-clockwise-blue': {
+          '0%': { 
+            transform: 'translate(-50%, -50%) translateX(20vw) rotate(180deg) translateX(20vw) rotate(-180deg)',
+          },
+          '25%': { 
+            transform: 'translate(-50%, -50%) translateX(20vw) rotate(270deg) translateX(20vw) rotate(-270deg)',
           },
           '50%': { 
-            transform: 'scale(1.2)',
-            opacity: '0.65'
+            transform: 'translate(-50%, -50%) translateX(20vw) rotate(360deg) translateX(20vw) rotate(-360deg)',
+          },
+          '75%': { 
+            transform: 'translate(-50%, -50%) translateX(20vw) rotate(450deg) translateX(20vw) rotate(-450deg)',
+          },
+          '100%': { 
+            transform: 'translate(-50%, -50%) translateX(20vw) rotate(540deg) translateX(20vw) rotate(-540deg)',
+          },
+        },
+        'rotate-clockwise-purple': {
+          '0%': { 
+            transform: 'translate(-50%, -50%) translateX(-20vw) rotate(0deg) translateX(20vw) rotate(0deg)',
+          },
+          '25%': { 
+            transform: 'translate(-50%, -50%) translateX(-20vw) rotate(90deg) translateX(20vw) rotate(-90deg)',
+          },
+          '50%': { 
+            transform: 'translate(-50%, -50%) translateX(-20vw) rotate(180deg) translateX(20vw) rotate(-180deg)',
+          },
+          '75%': { 
+            transform: 'translate(-50%, -50%) translateX(-20vw) rotate(270deg) translateX(20vw) rotate(-270deg)',
+          },
+          '100%': { 
+            transform: 'translate(-50%, -50%) translateX(-20vw) rotate(360deg) translateX(20vw) rotate(-360deg)',
           },
         },
       },
       animation: {
-        'puff-puff': 'puff-puff 3s ease-in-out infinite',
-        'puff-puff-slow': 'puff-puff 3s ease-in-out infinite',
-        'puff-puff-slower': 'puff-puff 3s ease-in-out infinite',
+        'rotate-blue': 'rotate-clockwise-blue 5s linear infinite',
+        'rotate-purple': 'rotate-clockwise-purple 5s linear infinite',
       },
     },
   },

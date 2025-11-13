@@ -12,17 +12,7 @@ const AppContent: React.FC = () => {
   const [lastSeekTime, setLastSeekTime] = React.useState<number | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [containerWidth, setContainerWidth] = React.useState(0);
-  const [particlesVisible, setParticlesVisible] = React.useState(false);
   const tracksRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const timer = requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setParticlesVisible(true);
-      });
-    });
-    return () => cancelAnimationFrame(timer);
-  }, []);
 
   const showUpload = processingStatus.status === 'idle' || processingStatus.status === 'error';
   const showSeparation = processingStatus.status === 'completed';
@@ -112,19 +102,10 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div 
-          className={`absolute top-[15%] left-[18%] w-64 h-64 md:w-80 md:h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl animate-puff-puff transition-opacity duration-300 ${
-            particlesVisible ? 'opacity-40' : 'opacity-0'
-          }`}
+          className="absolute top-1/2 left-1/2 w-64 h-64 md:w-80 md:h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-rotate-purple"
         />
         <div 
-          className={`absolute bottom-[10%] left-[10%] w-72 h-72 md:w-96 md:h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl animate-puff-puff-slow delay-700 transition-opacity duration-300 ${
-            particlesVisible ? 'opacity-40' : 'opacity-0'
-          }`}
-        />
-        <div 
-          className={`absolute bottom-[16%] right-[10%] w-80 h-80 md:w-[28rem] md:h-[28rem] bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl animate-puff-puff-slower delay-1000 transition-opacity duration-300 ${
-            particlesVisible ? 'opacity-40' : 'opacity-0'
-          }`}
+          className="absolute top-1/2 left-1/2 w-64 h-64 md:w-80 md:h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-rotate-blue"
         />
       </div>
 
