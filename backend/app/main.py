@@ -89,37 +89,32 @@ def demucs_separation(audio_data, job_id, original_ext):
   temp_file = None
   try:
     processing_status[job_id]['status'] = 'processing'
-    processing_status[job_id]['progress'] = 0
     if demucs_model is None:
       load_demucs_model()
-    processing_status[job_id]['progress'] = 5
     suffix = f'.{original_ext}' if original_ext else '.wav'
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
       tmp.write(audio_data)
       temp_file = tmp.name
     if original_ext.lower() == 'mp4':
       processing_status[job_id]['original_video_path'] = temp_file
-    processing_status[job_id]['progress'] = 10
+    processing_status[job_id]['progress'] = 3
     info = get_audio_info(temp_file)
-    processing_status[job_id]['progress'] = 15
+    processing_status[job_id]['progress'] = 6
     waveform, sr = load_waveform(temp_file, original_ext)
-    processing_status[job_id]['progress'] = 25
     if waveform.shape[0] == 1:
       waveform = torch.cat([waveform, waveform], dim=0)
     if sr != demucs_model.samplerate:
       waveform = torchaudio.transforms.Resample(sr, demucs_model.samplerate)(waveform)
       sr = demucs_model.samplerate
-    processing_status[job_id]['progress'] = 35
+    processing_status[job_id]['progress'] = 10
     waveform = normalize_audio(waveform, 1.0).to(device)
     with torch.no_grad():
       sources = apply_model(demucs_model, waveform[None], device=device)[0]
-    processing_status[job_id]['progress'] = 70
     tracks = {}
     for i, name in enumerate(demucs_model.sources):
       buffer = io.BytesIO()
       torchaudio.save(buffer, normalize_audio(sources[i].cpu()), sr, format='wav', encoding='PCM_S', bits_per_sample=16, backend='soundfile')
       tracks[name] = buffer.getvalue()
-      processing_status[job_id]['progress'] = 70 + (i + 1) * 5
     processing_status[job_id].update({'status': 'completed', 'progress': 100, 'tracks': tracks, 'audio_info': info, 'sample_rate': sr})
   except Exception as e:
     print(f"Job {job_id}: Error during separation: {str(e)}")
