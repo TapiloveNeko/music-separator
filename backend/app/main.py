@@ -16,6 +16,7 @@ from typing import Dict
 from pydub import AudioSegment
 import urllib.parse
 import subprocess
+import time
 
 try:
   import essentia.standard as es
@@ -85,8 +86,18 @@ def load_waveform(temp_file, original_ext):
     return torchaudio.load(wav_buffer, backend='soundfile')
   return torchaudio.load(temp_file, backend='soundfile')
 
+def progress_counter(job_id, stop_event):
+  for progress in range(11, 91):
+    if stop_event.is_set():
+      break
+    time.sleep(1.5)
+    if job_id in processing_status:
+      processing_status[job_id]['progress'] = progress
+
 def demucs_separation(audio_data, job_id, original_ext):
   temp_file = None
+  stop_event = threading.Event()
+  progress_thread = None
   try:
     processing_status[job_id]['status'] = 'processing'
     if demucs_model is None:
@@ -107,6 +118,8 @@ def demucs_separation(audio_data, job_id, original_ext):
       waveform = torchaudio.transforms.Resample(sr, demucs_model.samplerate)(waveform)
       sr = demucs_model.samplerate
     processing_status[job_id]['progress'] = 10
+    progress_thread = threading.Thread(target=progress_counter, args=(job_id, stop_event), daemon=True)
+    progress_thread.start()
     waveform = normalize_audio(waveform, 1.0).to(device)
     with torch.no_grad():
       sources = apply_model(demucs_model, waveform[None], device=device)[0]
@@ -115,9 +128,13 @@ def demucs_separation(audio_data, job_id, original_ext):
       buffer = io.BytesIO()
       torchaudio.save(buffer, normalize_audio(sources[i].cpu()), sr, format='wav', encoding='PCM_S', bits_per_sample=16, backend='soundfile')
       tracks[name] = buffer.getvalue()
+    stop_event.set()
+    progress_thread.join(timeout=1)
     processing_status[job_id].update({'status': 'completed', 'progress': 100, 'tracks': tracks, 'audio_info': info, 'sample_rate': sr})
   except Exception as e:
     print(f"Job {job_id}: Error during separation: {str(e)}")
+    stop_event.set()
+    progress_thread and progress_thread.join(timeout=1)
     processing_status[job_id] = {'status': 'error', 'error': str(e), 'progress': 0}
   finally:
     if temp_file and os.path.exists(temp_file) and original_ext.lower() != 'mp4':
