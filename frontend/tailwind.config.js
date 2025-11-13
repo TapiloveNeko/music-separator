@@ -33,7 +33,7 @@ module.exports = {
             transform: 'translate(-50%, -50%) translateX(20vw) rotate(540deg) translateX(20vw) rotate(-540deg)',
           },
         },
-        'rotate-clockwise-purple': {
+        'rotate-clockwise-pink': {
           '0%': { 
             transform: 'translate(-50%, -50%) translateX(-20vw) rotate(0deg) translateX(20vw) rotate(0deg)',
           },
@@ -53,7 +53,7 @@ module.exports = {
       },
       animation: {
         'rotate-blue': 'rotate-clockwise-blue 5s linear infinite',
-        'rotate-purple': 'rotate-clockwise-purple 5s linear infinite',
+        'rotate-pink': 'rotate-clockwise-pink 5s linear infinite',
       },
     },
   },

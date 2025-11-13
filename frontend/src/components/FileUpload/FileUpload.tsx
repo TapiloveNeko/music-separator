@@ -100,7 +100,7 @@ const FileUpload: React.FC = () => {
           {isDragging ? 'ここにドロップしてください' : 'クリックまたはドラッグ&ドロップでファイルを選択'}
         </p>
         <p className="text-white/50 text-[1.2rem] md:text-[1.4rem]">
-          音声ファイル（WAV / MP3 / M4A / FLAC / OGG / AAC / MP4 対応）
+          音声ファイル（MP3 / MP4 / M4A / AAC / WAV / FLAC / OGG 対応）
         </p>
       </div>
 
