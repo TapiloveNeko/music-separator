@@ -1,3 +1,14 @@
+---
+title: Music Separator
+emoji: 🎵
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+---
+↑Hugging Faceにアップロードするための特有の記述
+
 # バックエンド開発ガイド
 
 楽器分離アプリのバックエンド（Python + FastAPI + Demucs）です。
