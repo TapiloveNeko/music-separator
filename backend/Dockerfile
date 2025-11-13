@@ -6,6 +6,13 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libsndfile1 \
+    build-essential \
+    libyaml-dev \
+    libfftw3-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libswresample-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install Python dependencies
