@@ -46,4 +46,3 @@ export interface AppState {
   dragPosition: number | null;
   isDragging: boolean;
 }
-

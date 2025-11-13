@@ -182,7 +182,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const seekTo = useCallback((time: number) => {
     const clampedTime = Math.max(0, Math.min(time, state.duration));
     
-    // すべてのaudio要素の再生位置を変更
     audioElementsRef.current.forEach(audio => {
       audio.currentTime = clampedTime;
     });
