@@ -1,5 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useAudio } from '../../contexts/AudioContext';
+import musicFileIcon from '../../img/music-file.png';
+import musicalNoteIcon from '../../img/musical-note.png';
 
 const FileUpload: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -95,7 +97,7 @@ const FileUpload: React.FC = () => {
             : 'border-white/30 hover:border-white/60 hover:bg-white/5'
         } ${isProcessing ? 'opacity-60 cursor-not-allowed' : ''}`}
       >
-        <div className="text-6xl md:text-8xl mb-4">🎼</div>
+        <img src={musicalNoteIcon} alt="音楽" className="w-16 mb-4 mx-auto" />
         <p className="text-white text-[1.5rem] md:text-[1.8rem] mb-2 font-medium">
           {isDragging ? 'ここにドロップしてください' : 'クリックまたはドラッグ&ドロップでファイルを選択'}
         </p>
@@ -109,7 +111,7 @@ const FileUpload: React.FC = () => {
         disabled={isProcessing}
         className="md:hidden mt-12 bg-secondary border-none rounded-[15px] py-8 px-16 text-[1.8rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
       >
-        <span className="text-[2rem]">📁</span>
+        <img src={musicFileIcon} alt="ファイル" className="w-8 h-8" />
         ファイルを選択
       </button>
       

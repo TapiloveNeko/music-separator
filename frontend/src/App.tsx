@@ -114,7 +114,7 @@ const AppContent: React.FC = () => {
           <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
             曲から楽器を切り離す
           </h1>
-          <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-80">
+          <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-50">
             AI搭載のアルゴリズムで音楽を分割して表示
           </p>
         </header>
@@ -126,7 +126,7 @@ const AppContent: React.FC = () => {
             <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
               曲から楽器を切り離す
             </h1>
-            <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-80">
+            <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-50">
               AI搭載のアルゴリズムで音楽を分割して表示
             </p>
             <FileUpload />
