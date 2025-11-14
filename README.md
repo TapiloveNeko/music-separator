@@ -19,11 +19,9 @@ music-separator/
 ├── frontend/                 # React + TypeScript フロントエンド
 │   ├── src/
 │   └── package.json
-├── backend/                  # Python + Flask バックエンド
-│   ├── app.py
+├── backend/                  # Python + FastAPI バックエンド
+│   ├── app/
 │   └── requirements.txt
-├── docker-compose.yml        # Compose (frontend/backend/nginx)
-├── nginx.conf                # 逆プロキシ（ポート8080）
 └── README.md
 ```
 
@@ -31,43 +29,7 @@ music-separator/
 
 # 🚀 ローカル開発環境のセットアップ
 
-## 方法A（おすすめ）: Docker Compose で起動
-前提: Docker Desktop がインストール済みで CLI が使えること（`docker --version`, `docker compose version` で確認）
-
-1) ルートへ移動
-```bash
-cd path/to/your/project/music-separator
-```
-
-2) 起動
-```bash
-docker compose up --build -d
-```
-
-3) 起動確認
-```bash
-docker compose ps
-```
-
-4) アクセス
-- フロント: http://localhost:3000
-- バックエンド: http://localhost:7860/health （{"status":"healthy"}）
-- 逆プロキシ: http://localhost:8080 （nginx経由。不要なら無視）
-
-5) よくあるエラー
-- ポート80衝突 → `nginx` は 8080 に公開済。`http://localhost:8080` を使用
-- すべて作り直したい
-```bash
-docker compose down -v
-docker compose up --build -d
-```
-
-6) 停止
-```bash
-docker compose down
-```
-
-## 方法B: ネイティブ（yarn + Python）で起動
+## ローカル起動（ネイティブ）
 前提: Node.js(18+), Yarn, Python(3.10〜3.11推奨), FFmpeg が利用可能
 
 詳細な手順は各ディレクトリのREADMEを参照してください：
@@ -109,16 +71,13 @@ yarn start
 
 - **アップロードで `Network Error`**
   - バックエンドが起動しているか確認: `http://localhost:7860/health`
-  - コンテナ状態確認: `docker compose ps`
   - フロント設定 `BASE_URL` が `http://localhost:7860` か
 
 - **ポート競合**
-  - 3000/7860/8080 を占有している別プロセスを停止
-  - Docker: `docker compose down` → `up -d`
+  - 3000/7860 を占有している別プロセスを停止
 
 - **完全にリセットしたい**
-  - Docker: `docker compose down -v && docker compose up --build -d`
-  - ネイティブ: 各ディレクトリのREADMEを参照
+  - バックエンド/フロントエンドともに依存を再インストールし、各 README の手順に従う
 
 ---
 
@@ -157,7 +116,7 @@ yarn start
 
 **バックエンド**: Python 3.9+ / Flask / Demucs / Librosa / PyTorch
 
-**インフラ**: Docker / Docker Compose / Nginx
+**インフラ**: 任意（ローカル開発はネイティブ実行前提）
 
 ---
 

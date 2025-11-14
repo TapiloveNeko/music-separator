@@ -15,21 +15,9 @@ pinned: false
 
 ## 起動方法
 
-### Docker Composeで起動（推奨・汎用的）
-
-プロジェクトルートから実行：
-
-```bash
-docker compose up
-```
-
-バックグラウンドで起動する場合：
-
-```bash
-docker compose up -d
-```
-
-バックエンドは `http://localhost:7860` で起動します。
+> **Docker Composeについて**  
+> 本プロジェクトでは Essentia や Demucs など重いネイティブ依存を含むため、Docker Desktop 上ではビルド・起動・アップロード処理が著しく遅くなり、Essentia の解析結果も安定しない。  
+> Docker Compose は完全下位互換（精度低下・ビルド遅延・アップロード遅延）であるため、使用は避け、ローカル仮想環境 + `uvicorn` で起動することとする。
 
 ### ローカル開発（Dockerなし）
 
@@ -52,6 +40,12 @@ uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
 gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 ```
 
+### Docker Composeを非推奨とする理由
+- Essentia の Linux/ARM 向け wheel が存在せず、Docker Desktop 上では毎回ソースビルド（5 分以上）となる。
+- Demucs/Essentia の推論は macOS ネイティブ実行に比べ 2 倍以上遅く、アップロード後のトラック読込も常に遅延する。
+- Essentia の解析結果がコンテナ環境では安定せず、キー/BPM が崩れるケースが確認された。
+- 以上より Docker Compose はローカル開発における完全下位互換と判断し、使用を廃止した。
+
 ### コマンドの確認方法
 
 #### uvicorn の確認
@@ -73,6 +67,7 @@ gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 - **楽器分離**: Demucs（AI音源分離モデル）
 - **Webサーバー**: FastAPI + Uvicorn/Gunicorn
 - **音声処理**: torch + torchaudio
+- **キー/BPM推定**: Essentia KeyExtractor / RhythmExtractor（librosa fallback）
 
 ## API エンドポイント
 
@@ -105,7 +100,6 @@ backend/
 │   ├── __init__.py
 │   └── main.py         # FastAPI アプリケーション
 ├── requirements.txt    # Python 依存関係
-├── Dockerfile          # Docker設定
 └── README.md          # このファイル
 ```
 
@@ -122,3 +116,8 @@ backend/
 ### CORSエラー
 - `app/main.py` でCORSが有効になっているか確認
 - フロントエンドのAPI URL設定を確認
+
+### 進捗が 0% のまま動かない（`load() got an unexpected keyword argument 'backend'`）
+- Torch 2.0 系では `torchaudio.load(..., backend='soundfile')` が使えず例外になり、ジョブが即 `error` に落ちます。
+- 兆候: `uvicorn` の標準出力に `load() got an unexpected keyword argument 'backend'` が出る。UI はエラーを拾えず 0% で止まる。
+- 対処: `app/main.py` の入出力を `soundfile` で行うよう修正済み。もし同様の変更が失われた場合は `torchaudio.load/save(..., backend='soundfile')` の代わりに `soundfile.read/write` を使うよう戻してください。
