@@ -103,6 +103,19 @@ backend/
 └── README.md          # このファイル
 ```
 
+## 本番環境へのデプロイ
+
+### FFmpegのインストール（必須）
+
+本アプリケーションは `pydub` を使用しており、MP3、FLAC、M4A、OGG、MP4などのフォーマットを処理するために **FFmpeg** が必要です。
+
+本番環境で以下のエラーが発生した場合：
+```
+[Errno 2] No such file or directory: 'ffprobe'
+```
+
+これはFFmpegがインストールされていないことを意味します。**`backend/Dockerfile`を本番環境にアップロードするだけで解決します。**（DockerfileにはFFmpegのインストールが含まれています）
+
 ## トラブルシューティング
 
 ### メモリ不足
@@ -116,6 +129,10 @@ backend/
 ### CORSエラー
 - `app/main.py` でCORSが有効になっているか確認
 - フロントエンドのAPI URL設定を確認
+
+### `[Errno 2] No such file or directory: 'ffprobe'` エラー
+- **原因**: FFmpegがインストールされていない
+- **対処**: `backend/Dockerfile`を本番環境にアップロードしてください
 
 ### 進捗が 0% のまま動かない（`load() got an unexpected keyword argument 'backend'`）
 - Torch 2.0 系では `torchaudio.load(..., backend='soundfile')` が使えず例外になり、ジョブが即 `error` に落ちます。

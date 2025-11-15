@@ -194,7 +194,7 @@ const AudioPlayer: React.FC = () => {
             </div>
           </div>
           <div className="whitespace-nowrap md:hidden text-right">
-            <span className="text-[1.5rem] text-white">フォーマット: </span>
+            <span className="text-[1.5rem] text-white">ファイル形式: </span>
             <span className="text-[1.5rem] font-medium">mp3</span>
           </div>
         </div>
@@ -202,7 +202,7 @@ const AudioPlayer: React.FC = () => {
 
       <div className="flex flex-col items-center md:items-end gap-3 md:gap-6 w-full md:w-auto">
         <div className="hidden md:block">
-          <span className="text-[1.6rem] text-white">フォーマット: </span>
+          <span className="text-[1.6rem] text-white">ファイル形式: </span>
           <span className="text-[1.6rem] font-medium">mp3</span>
         </div>
         <div className="flex flex-row md:flex-col items-center gap-3 md:gap-4 w-full md:w-auto">

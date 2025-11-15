@@ -87,12 +87,12 @@ def load_waveform(temp_file, original_ext):
   return torchaudio.load(temp_file, backend='soundfile')
 
 def progress_counter(job_id, stop_event):
-  for progress in range(11, 91):
+  for progress in range(11, 88):
     if stop_event.is_set():
       break
-    time.sleep(1.5)
     if job_id in processing_status:
       processing_status[job_id]['progress'] = progress
+    time.sleep(1.5)
 
 def demucs_separation(audio_data, job_id, original_ext):
   temp_file = None
@@ -103,21 +103,37 @@ def demucs_separation(audio_data, job_id, original_ext):
     if demucs_model is None:
       load_demucs_model()
     suffix = f'.{original_ext}' if original_ext else '.wav'
+    # 0-2%: 音声ファイルをサーバーに書き込み中
+    processing_status[job_id]['progress'] = 0
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
+      processing_status[job_id]['progress'] = 1
       tmp.write(audio_data)
       temp_file = tmp.name
+      processing_status[job_id]['progress'] = 2
     if original_ext.lower() == 'mp4':
       processing_status[job_id]['original_video_path'] = temp_file
+    # 3%: 音声ファイルをサーバーに書き込み完了
     processing_status[job_id]['progress'] = 3
-    info = get_audio_info(temp_file)
+    # 4-5%: 音声ファイル情報（Key、BPM、曲の長さ）取得中
+    processing_status[job_id]['progress'] = 4
+    info = get_audio_info(temp_file)  # Essentiaで音声ファイルの情報（Key、BPM、曲の長さ）取得
+    processing_status[job_id]['progress'] = 5
+    # 6%: 音声ファイル情報（Key、BPM、曲の長さ）取得完了
     processing_status[job_id]['progress'] = 6
-    waveform, sr = load_waveform(temp_file, original_ext)
+    # 7-9%: 音声ファイル読み込み、ステレオ・サンプルレート変換中
+    processing_status[job_id]['progress'] = 7
+    waveform, sr = load_waveform(temp_file, original_ext) # torchaudioで音声ファイルを読み込み（AI分離用）
+    processing_status[job_id]['progress'] = 8
     if waveform.shape[0] == 1:
-      waveform = torch.cat([waveform, waveform], dim=0)
+      waveform = torch.cat([waveform, waveform], dim=0) # モノラルならステレオに変換
+    # 読み込んだ音声のサンプルレートがDemucsモデルの要求と違う場合、ResampleでDemucsモデルが要求するサンプリングレートに変換する
     if sr != demucs_model.samplerate:
       waveform = torchaudio.transforms.Resample(sr, demucs_model.samplerate)(waveform)
       sr = demucs_model.samplerate
+    processing_status[job_id]['progress'] = 9
+    # 10%: 音声ファイル読み込み、ステレオ・サンプルレート変換完了
     processing_status[job_id]['progress'] = 10
+    # 11-87%: 音声ファイル分離処理中（progress_counterで処理）
     progress_thread = threading.Thread(target=progress_counter, args=(job_id, stop_event), daemon=True)
     progress_thread.start()
     waveform = normalize_audio(waveform, 1.0).to(device)
@@ -126,10 +142,14 @@ def demucs_separation(audio_data, job_id, original_ext):
     tracks = {}
     for i, name in enumerate(demucs_model.sources):
       buffer = io.BytesIO()
+      # 分離された各トラック（vocals, guitar, bass, drums, piano, other）をWAV形式（PCM 16bit）でメモリ上のバッファに保存
       torchaudio.save(buffer, normalize_audio(sources[i].cpu()), sr, format='wav', encoding='PCM_S', bits_per_sample=16, backend='soundfile')
       tracks[name] = buffer.getvalue()
     stop_event.set()
     progress_thread.join(timeout=1)
+    # 90%: 音声ファイル分離処理完了
+    processing_status[job_id]['progress'] = 90
+    time.sleep(0.5)  # フロントエンドが90%を確実にキャッチできるように少し待つ
     processing_status[job_id].update({'status': 'completed', 'progress': 100, 'tracks': tracks, 'audio_info': info, 'sample_rate': sr})
   except Exception as e:
     print(f"Job {job_id}: Error during separation: {str(e)}")
@@ -173,6 +193,7 @@ def download(job_id: str, track: str):
     raise HTTPException(status_code=404 if job_id not in processing_status else 400, detail="Job not found" if job_id not in processing_status else "Processing not completed")
   if 'tracks' not in processing_status[job_id] or track not in processing_status[job_id]['tracks']:
     raise HTTPException(status_code=404, detail="Track not found")
+  # フロントエンドにWAVファイルを返す：Content-Typeを'audio/wav'に設定し、ファイル名を'{track}.wav'として指定
   return Response(content=processing_status[job_id]['tracks'][track], media_type='audio/wav', headers={"Content-Disposition": f'attachment; filename="{track}.wav"'})
 
 def generate_filename(volumes, base_name, ext):

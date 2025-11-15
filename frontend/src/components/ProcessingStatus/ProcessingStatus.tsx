@@ -27,11 +27,9 @@ const ProcessingStatus: React.FC = () => {
     }
   }, [processingStatus.progress, displayProgress]);
 
-  if (processingStatus.status === 'idle' || processingStatus.status === 'completed') {
+  if (processingStatus.status === 'idle' || processingStatus.status === 'completed' || processingStatus.status === 'error') {
     return null;
   }
-
-  const isError = processingStatus.status === 'error';
   
   const circumference = 2 * Math.PI * 56;
   const strokeDashoffset = circumference * (1 - displayProgress / 100);
@@ -78,17 +76,9 @@ const ProcessingStatus: React.FC = () => {
         </div>
       </div>
       
-      {isError ? (
-        <div className="bg-danger/20 border border-danger/30 rounded-[10px] p-4 md:p-6 text-danger mt-4 md:mt-6 text-[1.5rem] md:text-[1.6rem]">
-          <strong>エラーが発生しました</strong>
-          <br />
-          {processingStatus.error || '不明なエラーが発生しました'}
-        </div>
-      ) : (
-        <p className="text-[1.4rem] md:text-[1.8rem] font-light m-0 mb-4 md:mb-6 animate-pulse px-4">
-          {processingStatus.message}
-        </p>
-      )}
+      <p className="text-[1.4rem] md:text-[1.8rem] font-light m-0 mb-4 md:mb-6 animate-pulse px-4">
+        {processingStatus.message}
+      </p>
     </div>
   );
 };

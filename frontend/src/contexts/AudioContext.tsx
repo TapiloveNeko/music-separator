@@ -156,6 +156,25 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, []);
 
+  const getProgressMessage = (progress: number): string => {
+    if (progress >= 0 && progress <= 2) {
+      return '音声ファイルをサーバーに書き込み中';
+    } else if (progress === 3) {
+      return '音声ファイルをサーバーに書き込み完了';
+    } else if (progress >= 4 && progress <= 5) {
+      return '音声ファイル情報（Key、BPM、曲の長さ）取得中';
+    } else if (progress === 6) {
+      return '音声ファイル情報（Key、BPM、曲の長さ）取得完了';
+    } else if (progress >= 7 && progress <= 9) {
+      return '音声ファイル読み込み、ステレオ・サンプルレート変換中';
+    } else if (progress === 10) {
+      return '音声ファイル読み込み、ステレオ・サンプルレート変換完了';
+    } else if (progress >= 11 && progress <= 87) {
+      return '音声ファイル分離処理中';
+    }
+    return '音声処理中...';
+  };
+
   useEffect(() => {
     if (state.isPlaying) {
       playAllTracks();
@@ -194,7 +213,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       dispatch({ type: 'SET_FILE', payload: file });
       dispatch({
         type: 'SET_PROCESSING_STATUS',
-        payload: { status: 'uploading', progress: 0, message: 'アップロード中...' },
+        payload: { status: 'uploading', progress: 0, message: 'アップロード中' },
       });
 
       const uploadResponse = await uploadFile(file);
@@ -204,7 +223,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         payload: {
           status: 'processing',
           progress: 0,
-          message: '音声処理中...',
+          message: getProgressMessage(0),
           jobId: uploadResponse.job_id,
         },
       });
@@ -218,8 +237,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               type: 'SET_PROCESSING_STATUS',
               payload: {
                 status: 'processing',
-                progress: Math.min(status.progress, 95),
-                message: 'トラックを読み込み中...',
+                progress: 88,
+                message: 'トラック読み込み開始',
                 jobId: uploadResponse.job_id,
               },
             });
@@ -240,12 +259,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
               },
             });
           } else if (status.status === 'processing') {
+            const currentProgress = Math.min(status.progress, 87);
             dispatch({
               type: 'SET_PROCESSING_STATUS',
               payload: {
                 status: status.status,
-                progress: Math.min(status.progress, 90),
-                message: '音声処理中...',
+                progress: currentProgress,
+                message: getProgressMessage(currentProgress),
                 jobId: uploadResponse.job_id,
               },
             });
@@ -282,13 +302,41 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       const audioContext = audioContextRef.current || new (window.AudioContext || (window as any).webkitAudioContext)();
       let maxDuration = 0;
+      let completedItems = 0;
 
       for (const track of state.tracks) {
+        // 1. XHRリクエスト（downloadTrack）開始時点で「ダウンロード中」を表示
+        completedItems++;
+        const progress1 = 88 + completedItems;
+        dispatch({
+          type: 'SET_PROCESSING_STATUS',
+          payload: {
+            status: 'processing',
+            progress: progress1,
+            message: `${track.name}ダウンロード中`,
+            jobId: jobId,
+          },
+        });
+        
         const audioBlob = await downloadTrack(jobId, track.id);
+        
         const audioUrl = URL.createObjectURL(audioBlob);
         
         const audio = new Audio(audioUrl);
         audio.crossOrigin = 'anonymous';
+        
+        // 2. blob URLのメタデータ読み込み開始時点で「メタデータ読み込み中」を表示
+        completedItems++;
+        const progress2 = 88 + completedItems;
+        dispatch({
+          type: 'SET_PROCESSING_STATUS',
+          payload: {
+            status: 'processing',
+            progress: progress2,
+            message: `${track.name}のメタデータ読み込み中`,
+            jobId: jobId,
+          },
+        });
         
         await new Promise<void>((resolve, reject) => {
           audio.addEventListener('loadedmetadata', () => resolve(), { once: true });

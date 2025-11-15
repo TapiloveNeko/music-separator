@@ -81,8 +81,6 @@ const FileUpload: React.FC = () => {
     };
   }, []);
 
-  const isProcessing = state.processingStatus.status !== 'idle';
-
   return (
     <>
       <div
@@ -95,7 +93,7 @@ const FileUpload: React.FC = () => {
           isDragging
             ? 'border-white/80 bg-white/10'
             : 'border-white/30 hover:border-white/60 hover:bg-white/5'
-        } ${isProcessing ? 'opacity-60 cursor-not-allowed' : ''}`}
+        }`}
       >
         <img src={musicalNoteIcon} alt="音楽" className="w-16 mb-4 mx-auto" />
         <p className="text-white text-[1.5rem] md:text-[1.8rem] mb-2 font-medium">
@@ -108,8 +106,7 @@ const FileUpload: React.FC = () => {
 
       <button 
         onClick={handleUploadClick} 
-        disabled={isProcessing}
-        className="md:hidden mt-12 bg-secondary border-none rounded-[15px] py-8 px-16 text-[1.8rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
+        className="md:hidden mt-12 bg-secondary border-none rounded-[15px] py-8 px-16 text-[1.8rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 hover:translate-y-[2px] hover:shadow-none"
       >
         <img src={musicFileIcon} alt="ファイル" className="w-8 h-8" />
         ファイルを選択
@@ -120,17 +117,26 @@ const FileUpload: React.FC = () => {
         type="file"
         accept="audio/*,video/mp4"
         onChange={handleFileSelect}
-        disabled={isProcessing}
         className="hidden"
       />
       
-      {state.currentFile && (
-        <div className="mt-4 md:mt-6 p-4 md:p-6 bg-white/10 rounded-[10px] text-[1.5rem] md:text-[1.6rem] text-white max-w-full break-all">
-          選択されたファイル: {state.currentFile.name}
-          <br />
-          サイズ: {(state.currentFile.size / 1024 / 1024).toFixed(2)} MB
-        </div>
-      )}
+      <div className="mt-12">
+        {state.processingStatus.status === 'error' && (
+          <div className="bg-danger/20 border border-danger/30 rounded-[10px] p-4 md:p-6 text-danger text-[1.5rem] md:text-[1.6rem] max-w-full">
+            <strong>エラーが発生しました</strong>
+            <br />
+            {state.processingStatus.error || '不明なエラーが発生しました'}
+          </div>
+        )}
+        
+        {state.currentFile && (
+          <div className={`${state.processingStatus.status === 'error' ? 'mt-4 md:mt-6' : ''} p-4 md:p-6 bg-white/10 rounded-[10px] text-[1.5rem] md:text-[1.6rem] text-white max-w-full break-all`}>
+            選択されたファイル: {state.currentFile.name}
+            <br />
+            サイズ: {(state.currentFile.size / 1024 / 1024).toFixed(2)} MB
+          </div>
+        )}
+      </div>
     </>
   );
 };
