@@ -95,7 +95,7 @@ const FileUpload: React.FC = () => {
             : 'border-white/30 hover:border-white/60 hover:bg-white/5'
         }`}
       >
-        <img src={musicalNoteIcon} alt="音楽" className="w-16 mb-4 mx-auto" />
+        <img src={musicalNoteIcon} alt="音楽" className="w-40 mb-4 mx-auto" />
         <p className="text-white text-[1.5rem] md:text-[1.8rem] mb-2 font-medium">
           {isDragging ? 'ここにドロップしてください' : 'クリックまたはドラッグ&ドロップでファイルを選択'}
         </p>
