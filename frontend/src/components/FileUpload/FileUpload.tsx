@@ -106,7 +106,7 @@ const FileUpload: React.FC = () => {
 
       <button 
         onClick={handleUploadClick} 
-        className="md:hidden mt-12 bg-secondary border-none rounded-[15px] py-8 px-16 text-[1.8rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2 hover:translate-y-[2px] hover:shadow-none"
+        className="md:hidden mt-12 bg-secondary border-none rounded-[15px] py-8 px-16 text-[1.8rem] font-medium text-white cursor-pointer shadow-[0_8px_25px_rgba(142,68,173,0.3)] flex items-center gap-2"
       >
         <img src={musicFileIcon} alt="ファイル" className="w-8 h-8" />
         ファイルを選択

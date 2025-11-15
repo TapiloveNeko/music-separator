@@ -155,13 +155,13 @@ const AudioPlayer: React.FC = () => {
           <div className="flex gap-4 items-center">
             <button 
               onClick={handleResetToStart}
-              className="w-[45px] md:w-[50px] h-[45px] md:h-[50px] rounded-full border-none bg-secondary text-white text-[1.8rem] md:text-[2rem] cursor-pointer transition-all duration-300 grid place-content-center shadow-[0_4px_15px_rgba(142,68,173,0.3)] hover:scale-95 hover:shadow-none"
+              className="w-[45px] md:w-[50px] h-[45px] md:h-[50px] rounded-full border-none bg-secondary text-white text-[1.8rem] md:text-[2rem] cursor-pointer transition-all duration-300 grid place-content-center shadow-[0_4px_15px_rgba(142,68,173,0.3)] md:hover:scale-95 md:hover:shadow-none"
             >
               ⏮
             </button>
             <button 
               onClick={togglePlayback}
-              className="w-[55px] md:w-[60px] h-[55px] md:h-[60px] rounded-full border-none bg-secondary text-white text-[2rem] md:text-[2.4rem] cursor-pointer transition-all duration-300 grid place-content-center shadow-[0_4px_15px_rgba(142,68,173,0.3)] hover:scale-95 hover:shadow-none"
+              className="w-[55px] md:w-[60px] h-[55px] md:h-[60px] rounded-full border-none bg-secondary text-white text-[2rem] md:text-[2.4rem] cursor-pointer transition-all duration-300 grid place-content-center shadow-[0_4px_15px_rgba(142,68,173,0.3)] md:hover:scale-95 md:hover:shadow-none"
             >
               {isPlaying ? '⏸' : '▶'}
             </button>
@@ -208,14 +208,14 @@ const AudioPlayer: React.FC = () => {
         <div className="flex flex-row md:flex-col items-center gap-3 md:gap-4 w-full md:w-auto">
           <button 
             onClick={resetApp}
-            className="flex-1 md:w-full bg-danger border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.5rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(231,76,60,0.3)] hover:translate-y-[2px] hover:shadow-none order-1 md:order-2"
+            className="flex-1 md:w-full bg-danger border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.5rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(231,76,60,0.3)] md:hover:translate-y-[2px] md:hover:shadow-none order-1 md:order-2"
           >
             新しい曲を選択
           </button>
           <button 
             onClick={exportTracks}
             disabled={!canExport}
-            className="flex-1 md:w-full bg-success border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.5rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(46,204,113,0.3)] hover:translate-y-[2px] hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none order-2 md:order-1"
+            className="flex-1 md:w-full bg-success border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.5rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(46,204,113,0.3)] md:hover:translate-y-[2px] md:hover:shadow-none disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none order-2 md:order-1"
           >
             保存
           </button>
