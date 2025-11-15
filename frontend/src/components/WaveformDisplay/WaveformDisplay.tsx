@@ -27,31 +27,32 @@ const WaveformDisplay: React.FC<WaveformDisplayProps> = ({ track }) => {
     ctx.clearRect(0, 0, width, height);
 
     const centerY = height / 2;
-    const amplitude = height * 0.3;
+    const amplitude = height * 2.5;
     const barWidth = width / track.waveform.length;
 
-    ctx.strokeStyle = track.color;
-    ctx.fillStyle = track.color + '40';
-    ctx.lineWidth = 2;
+    ctx.fillStyle = track.color;
 
     ctx.beginPath();
-    ctx.moveTo(0, centerY);
+    
+    const firstX = 0;
+    const firstWaveAmplitude = track.waveform[0] * amplitude * (track.volume / 100) / 2;
+    const firstY = centerY - firstWaveAmplitude;
+    ctx.moveTo(firstX, firstY);
 
-    for (let i = 0; i < track.waveform.length; i++) {
+    for (let i = 1; i < track.waveform.length; i++) {
       const x = i * barWidth;
-      const y = centerY + (track.waveform[i] * amplitude * (track.volume / 100));
-      
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
+      const waveAmplitude = track.waveform[i] * amplitude * (track.volume / 100) / 2;
+      const y = centerY - waveAmplitude;
+      ctx.lineTo(x, y);
     }
 
-    ctx.stroke();
+    for (let i = track.waveform.length - 1; i >= 0; i--) {
+      const x = i * barWidth;
+      const waveAmplitude = track.waveform[i] * amplitude * (track.volume / 100) / 2;
+      const y = centerY + waveAmplitude;
+      ctx.lineTo(x, y);
+    }
 
-    ctx.lineTo(width, centerY);
-    ctx.lineTo(0, centerY);
     ctx.closePath();
     ctx.fill();
 

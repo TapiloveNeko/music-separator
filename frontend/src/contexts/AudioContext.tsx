@@ -171,8 +171,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return '音声ファイル読み込み、ステレオ・サンプルレート変換完了';
     } else if (progress >= 11 && progress <= 87) {
       return '音声ファイル分離処理中';
+    } else if (progress === 100) {
+      return '読み込み完了';
     }
-    return '音声処理中...';
+    return '';
   };
 
   useEffect(() => {
@@ -305,9 +307,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       let completedItems = 0;
 
       for (const track of state.tracks) {
-        // 1. XHRリクエスト（downloadTrack）開始時点で「ダウンロード中」を表示
         completedItems++;
-        const progress1 = 88 + completedItems;
+        const progress1 = 87 + completedItems;
         dispatch({
           type: 'SET_PROCESSING_STATUS',
           payload: {
@@ -325,9 +326,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const audio = new Audio(audioUrl);
         audio.crossOrigin = 'anonymous';
         
-        // 2. blob URLのメタデータ読み込み開始時点で「メタデータ読み込み中」を表示
         completedItems++;
-        const progress2 = 88 + completedItems;
+        const progress2 = 87 + completedItems;
         dispatch({
           type: 'SET_PROCESSING_STATUS',
           payload: {
@@ -377,6 +377,16 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       dispatch({ type: 'SET_DURATION', payload: maxDuration });
+      
+      dispatch({
+        type: 'SET_PROCESSING_STATUS',
+        payload: {
+          status: 'processing',
+          progress: 100,
+          message: getProgressMessage(100),
+          jobId: jobId,
+        },
+      });
     } catch (error) {
       console.error('Failed to load separated tracks:', error);
     }
