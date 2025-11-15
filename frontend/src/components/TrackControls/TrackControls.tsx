@@ -10,6 +10,11 @@ interface TrackControlsProps {
 
 const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDown }) => {
   const { updateTrackVolume } = useAudio();
+  const [inputValue, setInputValue] = React.useState(track.volume.toString());
+
+  React.useEffect(() => {
+    setInputValue(track.volume.toString());
+  }, [track.volume]);
 
   const handleVolumeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const volume = parseInt(event.target.value);
@@ -20,12 +25,15 @@ const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDow
     const value = event.target.value;
     
     if (value === '') {
+      setInputValue('');
       return;
     }
-
-    const volume = parseInt(value);
+  
+    const sanitized = value.replace(/^0+(?=\d)/, '');
+    const volume = parseInt(sanitized);
     
     if (!isNaN(volume) && volume >= 0 && volume <= 100) {
+      setInputValue(sanitized);
       updateTrackVolume(track.id, volume);
     }
   };
@@ -34,7 +42,8 @@ const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDow
     const value = event.target.value;
     
     if (value === '' || isNaN(parseInt(value))) {
-      event.target.value = track.volume.toString();
+      updateTrackVolume(track.id, 0);
+      setInputValue('0');
       return;
     }
 
@@ -42,8 +51,16 @@ const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDow
     
     if (volume < 0) {
       updateTrackVolume(track.id, 0);
+      setInputValue('0');
     } else if (volume > 100) {
       updateTrackVolume(track.id, 100);
+      setInputValue('100');
+    }
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.currentTarget.blur();
     }
   };
 
@@ -66,9 +83,10 @@ const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDow
             type="number"
             min="0"
             max="100"
-            value={track.volume}
+            value={inputValue}
             onChange={handleVolumeInputChange}
             onBlur={handleVolumeInputBlur}
+            onKeyDown={handleKeyDown}
             className="w-[38px] md:w-[45px] h-[24px] md:h-[28px] bg-white/10 border border-white/20 rounded text-white text-center text-[1.5rem] md:text-[1.6rem] outline-none focus:border-white/40 focus:bg-white/15 flex-shrink-0
               [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-inner-spin-button]:m-0
               [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0
