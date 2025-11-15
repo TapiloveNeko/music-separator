@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/music-separator/static/css/main.25dead49.css",
-    "main.js": "/music-separator/static/js/main.da197205.js",
+    "main.js": "/music-separator/static/js/main.5484762e.js",
     "static/js/453.d7446e4a.chunk.js": "/music-separator/static/js/453.d7446e4a.chunk.js",
     "static/media/musical-note.png": "/music-separator/static/media/musical-note.09cd3fe60200283e5113.png",
     "index.html": "/music-separator/index.html",
     "main.25dead49.css.map": "/music-separator/static/css/main.25dead49.css.map",
-    "main.da197205.js.map": "/music-separator/static/js/main.da197205.js.map",
+    "main.5484762e.js.map": "/music-separator/static/js/main.5484762e.js.map",
     "453.d7446e4a.chunk.js.map": "/music-separator/static/js/453.d7446e4a.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.25dead49.css",
-    "static/js/main.da197205.js"
+    "static/js/main.5484762e.js"
   ]
 }
