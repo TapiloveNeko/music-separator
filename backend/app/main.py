@@ -103,7 +103,7 @@ def demucs_separation(audio_data, job_id, original_ext):
     if demucs_model is None:
       load_demucs_model()
     suffix = f'.{original_ext}' if original_ext else '.wav'
-    # 0-2%: 音声ファイルをサーバーに書き込み中
+    # 0-2%: 音楽ファイルをサーバーに書き込み中
     processing_status[job_id]['progress'] = 0
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
       processing_status[job_id]['progress'] = 1
@@ -112,28 +112,28 @@ def demucs_separation(audio_data, job_id, original_ext):
       processing_status[job_id]['progress'] = 2
     if original_ext.lower() == 'mp4':
       processing_status[job_id]['original_video_path'] = temp_file
-    # 3%: 音声ファイルをサーバーに書き込み完了
+    # 3%: 音楽ファイルをサーバーに書き込み完了
     processing_status[job_id]['progress'] = 3
-    # 4-5%: 音声ファイル情報（Key、BPM、曲の長さ）取得中
+    # 4-5%: 音楽ファイル情報（Key、BPM、曲の長さ）取得中
     processing_status[job_id]['progress'] = 4
-    info = get_audio_info(temp_file)  # Essentiaで音声ファイルの情報（Key、BPM、曲の長さ）取得
+    info = get_audio_info(temp_file)  # Essentiaで音楽ファイルの情報（Key、BPM、曲の長さ）取得
     processing_status[job_id]['progress'] = 5
-    # 6%: 音声ファイル情報（Key、BPM、曲の長さ）取得完了
+    # 6%: 音楽ファイル情報（Key、BPM、曲の長さ）取得完了
     processing_status[job_id]['progress'] = 6
-    # 7-9%: 音声ファイル読み込み、ステレオ・サンプルレート変換中
+    # 7-9%: 音楽ファイル読み込み、ステレオ・サンプルレート変換中
     processing_status[job_id]['progress'] = 7
-    waveform, sr = load_waveform(temp_file, original_ext) # torchaudioで音声ファイルを読み込み（AI分離用）
+    waveform, sr = load_waveform(temp_file, original_ext) # torchaudioで音楽ファイルを読み込み（AI分離用）
     processing_status[job_id]['progress'] = 8
     if waveform.shape[0] == 1:
       waveform = torch.cat([waveform, waveform], dim=0) # モノラルならステレオに変換
-    # 読み込んだ音声のサンプルレートがDemucsモデルの要求と違う場合、ResampleでDemucsモデルが要求するサンプリングレートに変換する
+    # 読み込んだ音楽のサンプルレートがDemucsモデルの要求と違う場合、ResampleでDemucsモデルが要求するサンプリングレートに変換する
     if sr != demucs_model.samplerate:
       waveform = torchaudio.transforms.Resample(sr, demucs_model.samplerate)(waveform)
       sr = demucs_model.samplerate
     processing_status[job_id]['progress'] = 9
-    # 10%: 音声ファイル読み込み、ステレオ・サンプルレート変換完了
+    # 10%: 音楽ファイル読み込み、ステレオ・サンプルレート変換完了
     processing_status[job_id]['progress'] = 10
-    # 11-87%: 音声ファイル分離処理中（progress_counterで処理）
+    # 11-87%: 音楽ファイル分離処理中（progress_counterで処理）
     progress_thread = threading.Thread(target=progress_counter, args=(job_id, stop_event), daemon=True)
     progress_thread.start()
     waveform = normalize_audio(waveform, 1.0).to(device)
@@ -147,7 +147,7 @@ def demucs_separation(audio_data, job_id, original_ext):
       tracks[name] = buffer.getvalue()
     stop_event.set()
     progress_thread.join(timeout=1)
-    # 90%: 音声ファイル分離処理完了
+    # 90%: 音楽ファイル分離処理完了
     processing_status[job_id]['progress'] = 90
     time.sleep(0.5)  # フロントエンドが90%を確実にキャッチできるように少し待つ
     processing_status[job_id].update({'status': 'completed', 'progress': 100, 'tracks': tracks, 'audio_info': info, 'sample_rate': sr})

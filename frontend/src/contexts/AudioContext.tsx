@@ -158,19 +158,19 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const getProgressMessage = (progress: number): string => {
     if (progress >= 0 && progress <= 2) {
-      return '音声ファイルをサーバーに書き込み中';
+      return '音楽ファイルをサーバーに書き込み中';
     } else if (progress === 3) {
-      return '音声ファイルをサーバーに書き込み完了';
+      return '音楽ファイルをサーバーに書き込み完了';
     } else if (progress >= 4 && progress <= 5) {
-      return '音声ファイル情報（Key、BPM、曲の長さ）取得中';
+      return '音楽ファイル情報（Key、BPM、曲の長さ）取得中';
     } else if (progress === 6) {
-      return '音声ファイル情報（Key、BPM、曲の長さ）取得完了';
+      return '音楽ファイル情報（Key、BPM、曲の長さ）取得完了';
     } else if (progress >= 7 && progress <= 9) {
-      return '音声ファイル読み込み、ステレオ・サンプルレート変換中';
+      return '音楽ファイル読み込み、ステレオ・サンプルレート変換中';
     } else if (progress === 10) {
-      return '音声ファイル読み込み、ステレオ・サンプルレート変換完了';
+      return '音楽ファイル読み込み、ステレオ・サンプルレート変換完了';
     } else if (progress >= 11 && progress <= 87) {
-      return '音声ファイル分離処理中';
+      return '音楽ファイル分離処理中';
     } else if (progress === 100) {
       return '読み込み完了';
     }

@@ -66,7 +66,7 @@ gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 
 - **楽器分離**: Demucs（AI音源分離モデル）
 - **Webサーバー**: FastAPI + Uvicorn/Gunicorn
-- **音声処理**: torch + torchaudio
+- **音響処理**: torch + torchaudio
 - **キー/BPM推定**: Essentia KeyExtractor / RhythmExtractor（librosa fallback）
 
 ## API エンドポイント
@@ -74,7 +74,7 @@ gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 | メソッド | エンドポイント | 説明 |
 |---------|---------------|------|
 | GET | `/health` | ヘルスチェック |
-| POST | `/upload` | 音声ファイルをアップロード |
+| POST | `/upload` | 音楽ファイルをアップロード |
 | GET | `/status/{job_id}` | 処理状況を取得 |
 | GET | `/download/{job_id}/{track}` | 分離されたトラックをダウンロード |
 | POST | `/mix/{job_id}` | トラックをミックスしてダウンロード |
