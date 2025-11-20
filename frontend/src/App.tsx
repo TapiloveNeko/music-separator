@@ -39,29 +39,31 @@ const AppContent: React.FC = () => {
     return window.innerWidth < 768 ? 120 : 200;
   };
 
-  const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+  const getClientX = (event: MouseEvent | TouchEvent): number => {
+    if ('touches' in event && event.touches[0]) return event.touches[0].clientX;
+    if ('changedTouches' in event && (event as TouchEvent).changedTouches[0]) return (event as TouchEvent).changedTouches[0].clientX;
+    return (event as MouseEvent).clientX;
+  };
+
+  const handleStart = (clientX: number) => {
     if (!tracksRef.current) return;
-    
     const rect = tracksRef.current.getBoundingClientRect();
     const leftSectionWidth = getLeftSectionWidth();
-    const x = event.clientX - rect.left - leftSectionWidth;
+    const x = clientX - rect.left - leftSectionWidth;
     const waveformWidth = rect.width - leftSectionWidth;
     const progress = Math.max(0, Math.min(1, x / waveformWidth));
-    
     setDragProgress(progress);
     setLastSeekTime(null);
     setIsDragging(true);
   };
 
-  const handleMouseMove = React.useCallback((event: MouseEvent) => {
+  const handleMouseMove = React.useCallback((event: MouseEvent | TouchEvent) => {
     if (!isDragging || !tracksRef.current) return;
-    
     const rect = tracksRef.current.getBoundingClientRect();
     const leftSectionWidth = window.innerWidth < 768 ? 120 : 200;
-    const x = event.clientX - rect.left - leftSectionWidth;
+    const x = getClientX(event) - rect.left - leftSectionWidth;
     const waveformWidth = rect.width - leftSectionWidth;
     const progress = Math.max(0, Math.min(1, x / waveformWidth));
-    
     setDragProgress(progress);
   }, [isDragging]);
 
@@ -77,9 +79,13 @@ const AppContent: React.FC = () => {
   React.useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('touchmove', handleMouseMove, { passive: false });
+    document.addEventListener('touchend', handleMouseUp);
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleMouseMove);
+      document.removeEventListener('touchend', handleMouseUp);
     };
   }, [handleMouseMove, handleMouseUp]);
 
@@ -145,7 +151,8 @@ const AppContent: React.FC = () => {
                 <TrackControls 
                   key={track.id} 
                   track={track}
-                  onWaveformMouseDown={handleMouseDown}
+                  onWaveformMouseDown={(e) => handleStart(e.clientX)}
+                  onWaveformTouchStart={(e) => handleStart(e.touches[0].clientX)}
                 />
               ))}
               <div 

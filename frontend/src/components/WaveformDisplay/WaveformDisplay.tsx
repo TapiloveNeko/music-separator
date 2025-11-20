@@ -67,46 +67,49 @@ const WaveformDisplay: React.FC<WaveformDisplayProps> = ({ track }) => {
     }
   }, [track.waveform, track.color, track.volume, duration, dragPosition, isDragging]);
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const getClientX = (event: MouseEvent | TouchEvent): number => {
+    if ('touches' in event && event.touches[0]) return event.touches[0].clientX;
+    if ('changedTouches' in event && (event as TouchEvent).changedTouches[0]) return (event as TouchEvent).changedTouches[0].clientX;
+    return (event as MouseEvent).clientX;
+  };
+
+  const handleStart = (clientX: number) => {
     const canvas = canvasRef.current;
     if (!canvas || duration === 0) return;
-
-    const getTimeFromPosition = (clientX: number): number => {
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-      const ratio = x / rect.width;
-      return ratio * duration;
-    };
-
-    const initialTime = getTimeFromPosition(e.clientX);
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
+    const initialTime = (x / rect.width) * duration;
     setDragPosition(initialTime);
     setIsDragging(true);
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const time = getTimeFromPosition(moveEvent.clientX);
-      setDragPosition(time);
+    const handleMove = (moveEvent: MouseEvent | TouchEvent) => {
+      const x = Math.max(0, Math.min(getClientX(moveEvent) - rect.left, rect.width));
+      setDragPosition((x / rect.width) * duration);
     };
 
-    const handleMouseUp = (moveEvent: MouseEvent) => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      
-      const time = getTimeFromPosition(moveEvent.clientX);
-      seekTo(time);
-      
+    const handleUp = (upEvent: MouseEvent | TouchEvent) => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('touchend', handleUp);
+      const x = Math.max(0, Math.min(getClientX(upEvent) - rect.left, rect.width));
+      seekTo((x / rect.width) * duration);
       setIsDragging(false);
       setDragPosition(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleUp);
   };
 
   return (
     <div ref={containerRef} className="w-full h-full relative">
       <canvas 
         ref={canvasRef} 
-        onMouseDown={handleMouseDown}
+        onMouseDown={(e) => handleStart(e.clientX)}
+        onTouchStart={(e) => handleStart(e.touches[0].clientX)}
         className="w-full h-full block cursor-pointer"
       />
     </div>

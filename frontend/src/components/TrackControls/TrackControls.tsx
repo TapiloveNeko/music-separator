@@ -6,9 +6,10 @@ import { useAudio } from '../../contexts/AudioContext';
 interface TrackControlsProps {
   track: AudioTrack;
   onWaveformMouseDown: (event: React.MouseEvent<HTMLDivElement>) => void;
+  onWaveformTouchStart: (event: React.TouchEvent<HTMLDivElement>) => void;
 }
 
-const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDown }) => {
+const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDown, onWaveformTouchStart }) => {
   const { updateTrackVolume } = useAudio();
   const [inputValue, setInputValue] = React.useState(track.volume.toString());
 
@@ -98,6 +99,7 @@ const TrackControls: React.FC<TrackControlsProps> = ({ track, onWaveformMouseDow
         className="flex-1 relative h-full cursor-pointer overflow-hidden"
         style={{ backgroundColor: `${track.color}54` }}
         onMouseDown={onWaveformMouseDown}
+        onTouchStart={onWaveformTouchStart}
       >
         <WaveformDisplay track={track} />
       </div>
