@@ -99,6 +99,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const animationFrameRef = useRef<number | undefined>(undefined);
   const tracksRef = useRef<AudioTrack[]>([]);
   const isPlayingRef = useRef<boolean>(false);
+  const durationRef = useRef<number>(0);
 
   useEffect(() => {
     tracksRef.current = state.tracks;
@@ -107,6 +108,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     isPlayingRef.current = state.isPlaying;
   }, [state.isPlaying]);
+
+  useEffect(() => {
+    durationRef.current = state.duration;
+  }, [state.duration]);
 
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -142,9 +147,14 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const firstAudio = Array.from(audioElementsRef.current.values())[0];
       if (!firstAudio) return;
 
-      dispatch({ type: 'SET_CURRENT_TIME', payload: firstAudio.currentTime });
+      const currentTime = firstAudio.currentTime;
+      dispatch({ type: 'SET_CURRENT_TIME', payload: currentTime });
 
-      animationFrameRef.current = requestAnimationFrame(updateTime);
+      if (currentTime >= durationRef.current && isPlayingRef.current) {
+        dispatch({ type: 'SET_PLAYING', payload: false });
+      } else {
+        animationFrameRef.current = requestAnimationFrame(updateTime);
+      }
     };
 
     animationFrameRef.current = requestAnimationFrame(updateTime);
@@ -368,12 +378,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           },
         });
         
-        audio.addEventListener('ended', () => {
-          if (isPlayingRef.current) {
-            dispatch({ type: 'SET_PLAYING', payload: false });
-            dispatch({ type: 'SET_CURRENT_TIME', payload: 0 });
-          }
-        });
       }
 
       dispatch({ type: 'SET_DURATION', payload: maxDuration });
