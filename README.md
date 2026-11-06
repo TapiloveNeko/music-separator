@@ -42,7 +42,7 @@ music-separator/
 1) バックエンド起動
 ```bash
 cd backend
-python3 -m venv venv && source venv/bin/activate
+python3.11 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
 ```
@@ -114,7 +114,7 @@ yarn start
 
 **フロントエンド**: React 18 / TypeScript / Styled Components / Axios
 
-**バックエンド**: Python 3.9+ / Flask / Demucs / Librosa / PyTorch
+**バックエンド**: Python 3.10〜3.11 / FastAPI / Demucs / Librosa / PyTorch
 
 **インフラ**: 任意（ローカル開発はネイティブ実行前提）
 
@@ -127,6 +127,8 @@ yarn start
 | POST | `/upload` | 音楽ファイルをアップロード（非同期処理開始） |
 | GET | `/status/{job_id}` | 処理状況を取得 |
 | GET | `/download/{job_id}/{track}` | 分離されたトラックをダウンロード |
+| POST | `/mix/{job_id}` | トラックをミックスしてダウンロード |
+| DELETE | `/clear/{job_id}` | ジョブを削除 |
 | GET | `/health` | ヘルスチェック |
 
 ---
