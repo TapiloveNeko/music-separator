@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAudio } from '../../contexts/AudioContext';
+import { toFlatKey } from '../../utils/musicKey';
 
 const AudioPlayer: React.FC = () => {
   const { state, togglePlayback, exportTracks, resetApp, seekTo } = useAudio();
@@ -188,7 +189,7 @@ const AudioPlayer: React.FC = () => {
           <div className="flex flex-col gap-1 text-left md:text-left">
             <div className="whitespace-nowrap">
               <span className="text-[1.5rem] md:text-[1.6rem] text-white">音楽調: </span>
-              <span className="text-[1.5rem] md:text-[1.6rem] font-medium">{audioInfo?.key || '取得できませんでした'}</span>
+              <span className="text-[1.5rem] md:text-[1.6rem] font-medium">{audioInfo?.key ? toFlatKey(audioInfo.key) : '取得できませんでした'}</span>
             </div>
             <div className="whitespace-nowrap">
               <span className="text-[1.5rem] md:text-[1.6rem] text-white">拍/分: </span>
