@@ -21,17 +21,53 @@ pinned: false
 
 ### ローカル開発（Dockerなし）
 
-仮想環境を使う場合：
+> **Python のバージョンについて**  
+> `torch==2.1.0` / `numpy==1.24.3` は Python 3.11 までしか対応していないため、**Python 3.10〜3.11** を使用する（本番の `Dockerfile` は 3.10）。macOS 標準の `python3` は 3.9 のため使わない。
+
+#### 初回セットアップ（`backend` フォルダで実行）
+
+1. Python 3.11 をインストール（そのMacで初回のみ）
+   ```bash
+   brew install python@3.11
+   ```
+
+2. 古い venv があれば削除
+   ```bash
+   rm -rf venv
+   ```
+   **なぜ削除するのか**  
+   venv は作成した場所のパスを内部に記録するため、フォルダを移動・コピーすると動かなくなる（`bad interpreter` などのエラーが出る）。また、別バージョンの Python で作った venv に上書きすると中身が混ざる。venv は `requirements.txt` からいつでも作り直せるので、消して作り直すのが確実。
+
+   > これは venv の仕様で、このプロジェクト固有の問題ではない。一覧ファイル（`requirements.txt`）だけを管理して環境はその場で作り直すのが一般的な運用で、JavaScript の `node_modules/` も同じ考え方。
+
+3. Python 3.11 で venv を作成
+   ```bash
+   python3.11 -m venv venv
+   ```
+
+4. venv を有効化
+   ```bash
+   source venv/bin/activate
+   python --version   # 3.11.x と表示されればOK
+   ```
+
+5. ライブラリをインストール（torch を含むため数分かかる）
+   ```bash
+   pip install --upgrade pip
+   pip install -r requirements.txt
+   ```
+
+6. 起動
+   ```bash
+   uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
+   ```
+   http://localhost:7860/health が応答すれば完了。
+
+#### 2回目以降の起動
 
 ```bash
 cd backend
-
-# 仮想環境作成
-python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
-
-# 依存関係インストール
-pip install -r requirements.txt
+source venv/bin/activate
 
 # サーバー起動（開発用）
 uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
@@ -39,6 +75,15 @@ uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
 # サーバー起動（本番用）
 gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 ```
+
+#### プロジェクトのフォルダを移動・コピーした場合
+
+venv は作成時の絶対パスを内部に記録しているため、フォルダを移動・コピーすると動かなくなる（`bad interpreter: No such file or directory` などのエラーが出る）。その場合は上記「初回セットアップ」の手順 2〜5 を実行して venv を作り直す。
+
+- 同じMac内での移動：手順 1（Python のインストール）は不要
+- 別のMacへの移動：手順 1 から実行する（Homebrew・FFmpeg が未導入ならそれらも必要）
+
+venv は `requirements.txt` からいつでも再作成できる使い捨てのフォルダなので、Git には含めない。
 
 ### Docker Composeを非推奨とする理由
 - Essentia の Linux/ARM 向け wheel が存在せず、Docker Desktop 上では毎回ソースビルド（5 分以上）となる。
@@ -50,14 +95,14 @@ gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 
 #### uvicorn の確認
 ```bash
-cd /Users/keisuke.ohta/music-separator/backend
+cd backend
 source venv/bin/activate
 uvicorn app.main:app --host 0.0.0.0 --port 7860 --reload
 ```
 
 #### gunicorn の確認
 ```bash
-cd /Users/keisuke.ohta/music-separator/backend
+cd backend
 source venv/bin/activate
 gunicorn -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:7860
 ```
