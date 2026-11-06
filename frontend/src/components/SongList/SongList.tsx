@@ -15,13 +15,12 @@ const formatSize = (bytes: number): string =>
 
 // 左側の曲一覧。左上のメニューボタンで開閉する（PC・スマホ共通）
 const SongList: React.FC<SongListProps> = ({ isOpen, onClose }) => {
-  const { state, selectSong, removeSong, resetApp } = useAudio();
-  const { songs, currentSongId, processingStatus, currentFileName } = state;
+  const { state, selectSong, removeSong, resetApp, cancelJob } = useAudio();
+  const { songs, currentSongId, processingStatus, isRestoring } = state;
 
-  const isBusy = processingStatus.status === 'uploading' || processingStatus.status === 'processing';
-  // 分離中でまだ保存されていない曲は、一覧の先頭に「分離中」として表示する
-  const showPendingItem = isBusy && currentSongId === null;
-  const isNewSongScreen = !isBusy && currentSongId === null;
+  // 分離中の曲は、一覧の先頭に「分離中」として表示する。分離は裏で進むので、その間も他の曲を選べる
+  const isJobRunning = processingStatus.status === 'uploading' || processingStatus.status === 'processing';
+  const isNewSongScreen = currentSongId === null && !isRestoring;
 
   const handleSelect = (songId: string) => {
     selectSong(songId);
@@ -31,6 +30,13 @@ const SongList: React.FC<SongListProps> = ({ isOpen, onClose }) => {
   const handleNewSong = () => {
     resetApp();
     onClose();
+  };
+
+  const handleCancelJob = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (window.confirm(`「${processingStatus.fileName ?? 'この曲'}」の分離をキャンセルしますか？\n（途中までの処理は破棄されます）`)) {
+      cancelJob();
+    }
   };
 
   const handleRemove = (event: React.MouseEvent, songId: string, fileName: string) => {
@@ -71,19 +77,51 @@ const SongList: React.FC<SongListProps> = ({ isOpen, onClose }) => {
         <div className="px-4 pb-4">
           <button
             onClick={handleNewSong}
-            disabled={isBusy}
-            className={`w-full rounded-[10px] py-3 text-[1.4rem] font-medium text-white border border-white/20 cursor-pointer transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${isNewSongScreen ? 'bg-secondary' : 'bg-white/5 md:hover:bg-white/10'}`}
+            disabled={isJobRunning}
+            className={`w-full rounded-[10px] py-3 text-[1.4rem] font-medium text-white border border-white/20 cursor-pointer transition-colors duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${isNewSongScreen && !isJobRunning ? 'bg-secondary' : 'bg-white/5 md:hover:bg-white/10'}`}
           >
             ＋ 新しい曲
           </button>
+          {isJobRunning && (
+            <p className="mt-2 px-1 text-[1.2rem] text-white/60 leading-relaxed">
+              分離が完了するまで新しい曲は選択できません。進捗は下の「分離中」から確認できます。
+            </p>
+          )}
         </div>
 
         <ul className="flex-1 overflow-y-auto overscroll-contain px-4 pb-4 space-y-2">
-          {showPendingItem && (
-            <li className="rounded-[10px] px-4 py-3 bg-secondary/60">
-              <div className="text-[1.4rem] text-white break-all">{currentFileName}</div>
-              <div className="text-[1.2rem] text-white/70 mt-1">
-                {processingStatus.status === 'uploading' ? 'アップロード中' : `分離中 ${processingStatus.progress}%`}
+          {isJobRunning && (
+            <li>
+              {/* 押すと分離の進捗画面に移る */}
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={handleNewSong}
+                onKeyDown={event => {
+                  if (event.key === 'Enter' || event.key === ' ') handleNewSong();
+                }}
+                className={`rounded-[10px] px-4 py-3 cursor-pointer transition-colors duration-200 border border-dashed border-white/30 ${isNewSongScreen ? 'bg-secondary' : 'bg-white/5 md:hover:bg-white/10'}`}
+              >
+                <div className="flex items-start gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-[1.4rem] text-white break-all">{processingStatus.fileName}</div>
+                    <div className="text-[1.2rem] text-white/70 mt-1">
+                      {processingStatus.status === 'uploading' ? 'アップロード中' : `分離中 ${processingStatus.progress}%`}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCancelJob}
+                    className="shrink-0 rounded-[6px] border border-white/30 bg-transparent px-2 py-1 text-[1.1rem] text-white/80 cursor-pointer md:hover:bg-white/10"
+                  >
+                    キャンセル
+                  </button>
+                </div>
+                <div className="mt-2 h-[4px] rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-white/70 transition-[width] duration-300"
+                    style={{ width: `${processingStatus.status === 'uploading' ? 0 : processingStatus.progress}%` }}
+                  />
+                </div>
               </div>
             </li>
           )}
@@ -94,12 +132,12 @@ const SongList: React.FC<SongListProps> = ({ isOpen, onClose }) => {
               <li key={song.id}>
                 <div
                   role="button"
-                  tabIndex={isBusy ? -1 : 0}
-                  onClick={() => !isBusy && handleSelect(song.id)}
+                  tabIndex={0}
+                  onClick={() => handleSelect(song.id)}
                   onKeyDown={event => {
-                    if (!isBusy && (event.key === 'Enter' || event.key === ' ')) handleSelect(song.id);
+                    if (event.key === 'Enter' || event.key === ' ') handleSelect(song.id);
                   }}
-                  className={`group flex items-start gap-2 rounded-[10px] px-4 py-3 transition-colors duration-200 ${isActive ? 'bg-secondary' : 'bg-white/5'} ${isBusy && !isActive ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer md:hover:bg-white/10'}`}
+                  className={`group flex items-start gap-2 rounded-[10px] px-4 py-3 cursor-pointer transition-colors duration-200 ${isActive ? 'bg-secondary' : 'bg-white/5 md:hover:bg-white/10'}`}
                 >
                   <div className="flex-1 min-w-0">
                     <div className="text-[1.4rem] text-white break-all">{song.fileName}</div>
@@ -110,8 +148,7 @@ const SongList: React.FC<SongListProps> = ({ isOpen, onClose }) => {
                   </div>
                   <button
                     onClick={event => handleRemove(event, song.id, song.fileName)}
-                    disabled={isBusy}
-                    className="shrink-0 text-[1.6rem] leading-none text-white/50 bg-transparent border-none cursor-pointer md:hover:text-danger disabled:cursor-not-allowed"
+                    className="shrink-0 text-[1.6rem] leading-none text-white/50 bg-transparent border-none cursor-pointer md:hover:text-danger"
                     aria-label={`${song.fileName}を削除`}
                   >
                     ×
@@ -121,18 +158,13 @@ const SongList: React.FC<SongListProps> = ({ isOpen, onClose }) => {
             );
           })}
 
-          {songs.length === 0 && !showPendingItem && (
+          {songs.length === 0 && !isJobRunning && (
             <li className="text-[1.3rem] text-white/50 px-2 py-4 leading-relaxed">
               分離した曲はここに保存され、リロードしても残ります。
             </li>
           )}
         </ul>
 
-        {isBusy && (
-          <div className="px-6 py-4 border-t border-white/10 text-[1.2rem] text-white/70 leading-relaxed">
-            分離中は曲を切り替えられません
-          </div>
-        )}
       </aside>
     </>
   );

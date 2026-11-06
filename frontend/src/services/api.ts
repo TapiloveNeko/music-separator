@@ -7,7 +7,7 @@ const api = axios.create({
   timeout: API_CONFIG.TIMEOUT,
 });
 
-export const uploadFile = async (file: File): Promise<UploadResponse> => {
+export const uploadFile = async (file: File, signal?: AbortSignal): Promise<UploadResponse> => {
   const formData = new FormData();
   formData.append('file', file);
   
@@ -15,6 +15,7 @@ export const uploadFile = async (file: File): Promise<UploadResponse> => {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
+    signal,
   });
   
   return response.data;
@@ -44,6 +45,14 @@ export const mixTracks = async (jobId: string, volumes: { [key: string]: number 
   
   return { blob: response.data, filename };
 };
+
+// 分離をキャンセルする。サーバーは分離の区切り（数秒ごと）で処理を止め、途中のデータを削除する
+export const cancelJob = async (jobId: string): Promise<void> => {
+  await api.post(`/cancel/${jobId}`);
+};
+
+// アップロードを途中で中止した場合
+export const isCanceledRequest = (error: unknown): boolean => axios.isCancel(error);
 
 // サーバーが再起動してジョブが消えた場合などに 404 が返る
 export const isNotFoundError = (error: unknown): boolean =>

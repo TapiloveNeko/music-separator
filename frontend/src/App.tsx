@@ -8,7 +8,7 @@ import SongList from './components/SongList';
 import { MAX_SONGS } from './services/storage';
 
 const AppContent: React.FC = () => {
-  const { state, seekTo, dismissSaveError } = useAudio();
+  const { state, seekTo, dismissSaveError, dismissNotice, openCompletedSong } = useAudio();
   const { processingStatus, tracks, currentFileName, currentTime, duration } = state;
   const [dragProgress, setDragProgress] = React.useState(0);
   const [lastSeekTime, setLastSeekTime] = React.useState<number | null>(null);
@@ -58,8 +58,13 @@ const AppContent: React.FC = () => {
   }, [isSongListOpen]);
   const tracksRef = React.useRef<HTMLDivElement>(null);
 
-  const showUpload = !state.isRestoring && (processingStatus.status === 'idle' || processingStatus.status === 'error');
-  const showSeparation = processingStatus.status === 'completed';
+  // 表示中の曲があれば曲の画面、無ければ「新しい曲」の画面（分離中なら進捗、それ以外はアップロード）を出す。
+  // 分離は表示中の曲とは関係なく裏で進むので、分離中でも保存済みの曲を開いて聴ける
+  const isJobRunning = processingStatus.status === 'uploading' || processingStatus.status === 'processing';
+  const isNewSongView = !state.currentSongId && !state.isRestoring;
+  const showUpload = isNewSongView && !isJobRunning;
+  const showProgress = isNewSongView && isJobRunning;
+  const showSeparation = !!state.currentSongId && !state.isRestoring;
   const isSongLimitReached = state.songs.length >= MAX_SONGS;
 
   React.useEffect(() => {
@@ -162,6 +167,35 @@ const AppContent: React.FC = () => {
 
       <SongList isOpen={isSongListOpen} onClose={() => setIsSongListOpen(false)} />
 
+      {/* 分離完了などのお知らせ。別の曲を聴いている間に分離が終わったときは「開く」で切り替えられる */}
+      {state.notice && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 z-20 w-[calc(100%-14rem)] max-w-[560px] flex items-center gap-4 rounded-[12px] px-5 py-4 text-[1.4rem] text-white shadow-[0_8px_24px_rgba(0,0,0,0.4)] bg-[#0f1528] border"
+          style={{
+            top: 'calc(env(safe-area-inset-top, 0px) + 1.6rem)',
+            borderColor: state.notice.kind === 'success' ? 'rgba(46,204,113,0.6)' : 'rgba(231,76,60,0.6)',
+          }}
+          role="status"
+        >
+          <span className="flex-1 break-all">{state.notice.message}</span>
+          {state.notice.canOpenCompletedSong && (
+            <button
+              onClick={openCompletedSong}
+              className="shrink-0 rounded-[8px] bg-success px-4 py-2 text-[1.3rem] font-medium text-white border-none cursor-pointer md:hover:opacity-90"
+            >
+              開く
+            </button>
+          )}
+          <button
+            onClick={dismissNotice}
+            className="shrink-0 text-[1.8rem] leading-none text-white/60 bg-transparent border-none cursor-pointer"
+            aria-label="お知らせを閉じる"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* 曲一覧を開くメニューボタン（ハンバーガー） */}
       <button
         onClick={() => setIsSongListOpen(true)}
@@ -206,7 +240,7 @@ const AppContent: React.FC = () => {
               )}
             </div>
           )}
-          <ProcessingStatus />
+          {showProgress && <ProcessingStatus />}
         
           {showSeparation && (
             <div className="w-full max-w-[1200px] mx-auto rounded-[20px] backdrop-blur-[10px]">

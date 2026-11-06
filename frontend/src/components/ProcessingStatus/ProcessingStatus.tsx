@@ -2,8 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useAudio } from '../../contexts/AudioContext';
 
 const ProcessingStatus: React.FC = () => {
-  const { state } = useAudio();
+  const { state, cancelJob } = useAudio();
   const { processingStatus } = state;
+
+  const handleCancel = () => {
+    if (window.confirm(`「${processingStatus.fileName ?? 'この曲'}」の分離をキャンセルしますか？\n（途中までの処理は破棄されます）`)) {
+      cancelJob();
+    }
+  };
   const [displayProgress, setDisplayProgress] = useState(0);
 
   useEffect(() => {
@@ -27,7 +33,7 @@ const ProcessingStatus: React.FC = () => {
     }
   }, [processingStatus.progress, displayProgress]);
 
-  if (processingStatus.status === 'idle' || processingStatus.status === 'completed' || processingStatus.status === 'error') {
+  if (processingStatus.status === 'idle' || processingStatus.status === 'error') {
     return null;
   }
   
@@ -79,6 +85,13 @@ const ProcessingStatus: React.FC = () => {
       <p className="text-[1.4rem] md:text-[1.8rem] font-light m-0 mb-4 md:mb-6 animate-pulse px-4">
         {processingStatus.message}
       </p>
+
+      <button
+        onClick={handleCancel}
+        className="mx-auto mt-4 md:mt-6 rounded-[10px] border border-white/30 bg-white/5 px-8 py-3 text-[1.4rem] md:text-[1.5rem] text-white cursor-pointer transition-colors duration-200 md:hover:bg-white/15"
+      >
+        キャンセル
+      </button>
     </div>
   );
 };

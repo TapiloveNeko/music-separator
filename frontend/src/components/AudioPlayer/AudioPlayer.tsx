@@ -3,7 +3,9 @@ import { useAudio } from '../../contexts/AudioContext';
 
 const AudioPlayer: React.FC = () => {
   const { state, togglePlayback, exportTracks, resetApp, seekTo } = useAudio();
-  const { isPlaying, currentTime, audioInfo, processingStatus } = state;
+  const { isPlaying, currentTime, audioInfo, currentSongId, processingStatus } = state;
+  // 分離は1曲ずつなので、別の曲を分離している間は新しい曲を選べない
+  const isJobRunning = processingStatus.status === 'uploading' || processingStatus.status === 'processing';
   const [timeInput, setTimeInput] = useState('00:00.0');
   const [isEditing, setIsEditing] = useState(false);
 
@@ -135,7 +137,7 @@ const AudioPlayer: React.FC = () => {
     }
   };
 
-  const canExport = processingStatus.status === 'completed';
+  const canExport = currentSongId !== null;
 
   return (
     <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-12 mt-6 md:mt-12 border-t border-white/10 pt-6 md:pt-12">
@@ -208,7 +210,8 @@ const AudioPlayer: React.FC = () => {
         <div className="flex flex-row md:flex-col items-center gap-3 md:gap-4 w-full md:w-auto">
           <button 
             onClick={resetApp}
-            className="flex-1 md:w-full bg-danger border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.5rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(231,76,60,0.3)] md:hover:translate-y-[2px] md:hover:shadow-none order-1 md:order-2"
+            disabled={isJobRunning}
+            className="flex-1 md:w-full bg-danger border-none rounded-[10px] py-4 md:py-5 px-6 md:px-12 text-[1.5rem] md:text-[1.6rem] font-medium text-white cursor-pointer transition-all duration-300 shadow-[0_4px_15px_rgba(231,76,60,0.3)] md:hover:translate-y-[2px] md:hover:shadow-none disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none order-1 md:order-2"
           >
             新しい曲を選択
           </button>
@@ -220,6 +223,11 @@ const AudioPlayer: React.FC = () => {
             保存
           </button>
         </div>
+        {isJobRunning && (
+          <p className="w-full md:max-w-[280px] text-[1.3rem] text-white/70 leading-relaxed text-center md:text-right">
+            「{processingStatus.fileName}」を分離中のため、完了するまで新しい曲は選択できません
+          </p>
+        )}
       </div>
     </div>
   );
