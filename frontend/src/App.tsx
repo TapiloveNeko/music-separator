@@ -25,6 +25,37 @@ const AppContent: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isSongListOpen]);
+
+  // 曲一覧を開いている間は、後ろのページがスクロールしないように固定する。
+  // iPhone の Safari は body の overflow: hidden だけでは止まらないため、body を position: fixed にして現在の位置で固定する
+  React.useEffect(() => {
+    if (!isSongListOpen) return;
+
+    const { style } = document.body;
+    const scrollY = window.scrollY;
+    // スクロールバーが消えた分だけ画面が横にずれないよう、その幅を余白で補う
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const previous = {
+      position: style.position,
+      top: style.top,
+      left: style.left,
+      right: style.right,
+      overflow: style.overflow,
+      paddingRight: style.paddingRight,
+    };
+
+    style.position = 'fixed';
+    style.top = `-${scrollY}px`;
+    style.left = '0';
+    style.right = '0';
+    style.overflow = 'hidden';
+    style.paddingRight = `${scrollbarWidth}px`;
+
+    return () => {
+      Object.assign(style, previous);
+      window.scrollTo(0, scrollY);
+    };
+  }, [isSongListOpen]);
   const tracksRef = React.useRef<HTMLDivElement>(null);
 
   const showUpload = !state.isRestoring && (processingStatus.status === 'idle' || processingStatus.status === 'error');

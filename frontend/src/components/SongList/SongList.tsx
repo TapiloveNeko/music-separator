@@ -49,7 +49,7 @@ const SongList: React.FC<SongListProps> = ({ isOpen, onClose }) => {
       />
 
       <aside
-        className={`fixed top-0 left-0 z-40 h-full w-[260px] flex flex-col bg-[#0f1528]/90 backdrop-blur-[10px] border-r border-white/10 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 z-40 h-full w-[260px] flex flex-col bg-[#0f1528] border-r border-white/10 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex items-start justify-between px-6 pt-8 pb-4">
           <div>
@@ -78,7 +78,7 @@ const SongList: React.FC<SongListProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <ul className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+        <ul className="flex-1 overflow-y-auto overscroll-contain px-4 pb-4 space-y-2">
           {showPendingItem && (
             <li className="rounded-[10px] px-4 py-3 bg-secondary/60">
               <div className="text-[1.4rem] text-white break-all">{currentFileName}</div>
