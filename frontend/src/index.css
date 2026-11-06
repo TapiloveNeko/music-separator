@@ -3,7 +3,10 @@
 @tailwind utilities;
 
 @layer base {
-  * {
+  /* 引っ張って更新・画面のバウンドを防ぐ。全要素（*）に付けると、overflow-hidden の要素（波形エリアなど）の上で
+     ページのスクロールが止まってしまうため、ページ全体にだけ付ける */
+  html,
+  body {
     overscroll-behavior: none;
   }
   
