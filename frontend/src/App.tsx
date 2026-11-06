@@ -4,18 +4,32 @@ import FileUpload from './components/FileUpload';
 import ProcessingStatus from './components/ProcessingStatus';
 import TrackControls from './components/TrackControls';
 import AudioPlayer from './components/AudioPlayer';
+import SongList from './components/SongList';
+import { MAX_SONGS } from './services/storage';
 
 const AppContent: React.FC = () => {
-  const { state, seekTo } = useAudio();
-  const { processingStatus, tracks, currentFile, currentTime, duration } = state;
+  const { state, seekTo, dismissSaveError } = useAudio();
+  const { processingStatus, tracks, currentFileName, currentTime, duration } = state;
   const [dragProgress, setDragProgress] = React.useState(0);
   const [lastSeekTime, setLastSeekTime] = React.useState<number | null>(null);
   const [isDragging, setIsDragging] = React.useState(false);
   const [containerWidth, setContainerWidth] = React.useState(0);
+  const [isSongListOpen, setIsSongListOpen] = React.useState(false);
+
+  // 曲一覧を開いているときは Esc キーで閉じられるようにする
+  React.useEffect(() => {
+    if (!isSongListOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsSongListOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSongListOpen]);
   const tracksRef = React.useRef<HTMLDivElement>(null);
 
-  const showUpload = processingStatus.status === 'idle' || processingStatus.status === 'error';
+  const showUpload = !state.isRestoring && (processingStatus.status === 'idle' || processingStatus.status === 'error');
   const showSeparation = processingStatus.status === 'completed';
+  const isSongLimitReached = state.songs.length >= MAX_SONGS;
 
   React.useEffect(() => {
     const updateWidth = () => {
@@ -115,56 +129,92 @@ const AppContent: React.FC = () => {
         />
       </div>
 
-      {!showUpload && (
-        <header className="relative z-10 text-center pt-16 md:pt-32 px-8 md:px-12 backdrop-blur-[10px]">
-          <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
-            曲から楽器を切り離す
-          </h1>
-          <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-50">
-            AI搭載のアルゴリズムで音楽を分割して表示
-          </p>
-        </header>
-      )}
+      <SongList isOpen={isSongListOpen} onClose={() => setIsSongListOpen(false)} />
 
-      <main className={`relative z-10 flex-1 p-8 md:p-12 ${showUpload ? 'flex flex-col justify-center items-center' : ''}`}>
-        {showUpload && (
-          <div className="flex flex-col items-center text-center">
+      {/* 曲一覧を開くメニューボタン（ハンバーガー） */}
+      <button
+        onClick={() => setIsSongListOpen(true)}
+        className="fixed left-4 md:left-6 z-20 w-[44px] h-[44px] flex flex-col justify-center items-center gap-[5px] rounded-[10px] bg-black/40 backdrop-blur-[10px] border border-white/20 cursor-pointer md:hover:bg-black/60"
+        style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1.6rem)' }}
+        aria-label="曲一覧を開く"
+      >
+        <span className="block w-[20px] h-[2px] rounded-full bg-white" />
+        <span className="block w-[20px] h-[2px] rounded-full bg-white" />
+        <span className="block w-[20px] h-[2px] rounded-full bg-white" />
+      </button>
+
+      <div className="flex-1 flex flex-col">
+        {!showUpload && (
+          <header className="relative z-10 text-center pt-16 md:pt-32 px-8 md:px-12 backdrop-blur-[10px]">
             <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
               曲から楽器を切り離す
             </h1>
             <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-50">
               AI搭載のアルゴリズムで音楽を分割して表示
             </p>
-            <FileUpload />
-          </div>
+          </header>
         )}
-        <ProcessingStatus />
+
+        <main className={`relative z-10 flex-1 p-8 md:p-12 ${showUpload ? 'flex flex-col justify-center items-center' : ''}`}>
+          {showUpload && (
+            <div className="flex flex-col items-center text-center">
+              <h1 className="text-[3.2rem] md:text-[4rem] font-bold bg-white bg-clip-text text-transparent">
+                曲から楽器を切り離す
+              </h1>
+              <p className="text-[1.5rem] md:text-[1.6rem] font-light mt-2 md:mt-4 opacity-50">
+                AI搭載のアルゴリズムで音楽を分割して表示
+              </p>
+              {isSongLimitReached ? (
+                <div className="mt-8 md:mt-12 max-w-[550px] p-6 md:p-8 rounded-[15px] bg-white/10 text-[1.4rem] md:text-[1.6rem] text-white leading-relaxed">
+                  保存できる曲は {MAX_SONGS} 曲までです。
+                  <br />
+                  新しい曲を分離するには、曲一覧から不要な曲を削除してください。
+                </div>
+              ) : (
+                <FileUpload />
+              )}
+            </div>
+          )}
+          <ProcessingStatus />
         
-        {showSeparation && (
-          <div className="w-full max-w-[1200px] mx-auto rounded-[20px] backdrop-blur-[10px]">
-            <div className="text-right md:text-right">
-              <span className="text-[1.5rem] md:text-[1.6rem] font-medium text-white break-all">{currentFile?.name}</span>
-            </div>
+          {showSeparation && (
+            <div className="w-full max-w-[1200px] mx-auto rounded-[20px] backdrop-blur-[10px]">
+                {state.saveError && (
+                  <div className="mb-6 md:mb-8 flex items-start gap-4 p-4 md:p-6 rounded-[10px] bg-danger/20 border border-danger/60 text-[1.4rem] md:text-[1.5rem] text-white leading-relaxed">
+                    <span className="flex-1">{state.saveError}</span>
+                    <button
+                      onClick={dismissSaveError}
+                      className="shrink-0 text-[1.8rem] leading-none text-white/70 bg-transparent border-none cursor-pointer"
+                      aria-label="メッセージを閉じる"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              <div className="text-right md:text-right">
+                <span className="text-[1.5rem] md:text-[1.6rem] font-medium text-white break-all">{currentFileName}</span>
+              </div>
 
-            <div ref={tracksRef} className="mt-6 md:mt-12 relative">
-              {tracks.map(track => (
-                <TrackControls 
-                  key={track.id} 
-                  track={track}
-                  onWaveformMouseDown={(e) => handleStart(e.clientX)}
-                  onWaveformTouchStart={(e) => handleStart(e.touches[0].clientX)}
+              <div ref={tracksRef} className="mt-6 md:mt-12 relative">
+                {tracks.map(track => (
+                  <TrackControls 
+                    key={track.id} 
+                    track={track}
+                    onWaveformMouseDown={(e) => handleStart(e.clientX)}
+                    onWaveformTouchStart={(e) => handleStart(e.touches[0].clientX)}
+                  />
+                ))}
+                <div 
+                  className="absolute top-0 w-[2px] h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.6)] z-20 pointer-events-none"
+                  style={{ left: `${playheadLeftPx}px` }}
                 />
-              ))}
-              <div 
-                className="absolute top-0 w-[2px] h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.6)] z-20 pointer-events-none"
-                style={{ left: `${playheadLeftPx}px` }}
-              />
-            </div>
+              </div>
 
-            <AudioPlayer />
-          </div>
-        )}
-      </main>
+              <AudioPlayer />
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };

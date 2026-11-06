@@ -45,6 +45,10 @@ export const mixTracks = async (jobId: string, volumes: { [key: string]: number 
   return { blob: response.data, filename };
 };
 
+// サーバーが再起動してジョブが消えた場合などに 404 が返る
+export const isNotFoundError = (error: unknown): boolean =>
+  axios.isAxiosError(error) && error.response?.status === 404;
+
 export const healthCheck = async (): Promise<boolean> => {
   try {
     const response = await api.get('/health');
