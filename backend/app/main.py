@@ -43,6 +43,8 @@ AUDIO_EXTENSIONS = {'mp3', 'flac', 'm4a', 'ogg', 'mp4'}
 MEDIA_TYPES = {'mp3': 'audio/mpeg', 'wav': 'audio/wav', 'flac': 'audio/flac', 'm4a': 'audio/mp4', 'ogg': 'audio/ogg', 'mp4': 'video/mp4'}
 FORMAT_MAP = {'mp3': ('mp3', ['-q:a', '2']), 'flac': ('flac', ['-compression_level', '5']), 'm4a': ('m4a', []), 'ogg': ('ogg', []), 'mp4': ('mp4', [])}
 processing_status = {}
+# 分離中のジョブのキャンセル要求。job_id ごとの Event がセットされたら、分離処理は次の確認地点で止まる
+cancel_events: Dict[str, threading.Event] = {}
 demucs_model = None
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -86,6 +88,38 @@ def load_waveform(temp_file, original_ext):
     return torchaudio.load(wav_buffer, backend='soundfile')
   return torchaudio.load(temp_file, backend='soundfile')
 
+class JobCancelled(Exception):
+  pass
+
+class CancellablePool:
+  """Demucs の apply_model は曲を約8秒ずつに区切り、区切りごとの計算を pool に依頼する。
+  区切りの計算を始める前にキャンセルを確認することで、一番時間のかかる分離の途中でも数秒以内に止められるようにする。
+  （demucs.utils.DummyPoolExecutor と同じく、result() が呼ばれた時点でその場で計算する）"""
+  class _Result:
+    def __init__(self, cancel_event, func, args, kwargs):
+      self.cancel_event = cancel_event
+      self.func = func
+      self.args = args
+      self.kwargs = kwargs
+
+    def result(self):
+      if self.cancel_event.is_set():
+        raise JobCancelled()
+      return self.func(*self.args, **self.kwargs)
+
+  def __init__(self, cancel_event):
+    self.cancel_event = cancel_event
+
+  def submit(self, func, *args, **kwargs):
+    return CancellablePool._Result(self.cancel_event, func, args, kwargs)
+
+def remove_file(path):
+  if path and os.path.exists(path):
+    try:
+      os.unlink(path)
+    except Exception:
+      pass
+
 def progress_counter(job_id, stop_event):
   for progress in range(11, 88):
     if stop_event.is_set():
@@ -98,6 +132,13 @@ def demucs_separation(audio_data, job_id, original_ext):
   temp_file = None
   stop_event = threading.Event()
   progress_thread = None
+  cancel_event = cancel_events[job_id]
+  cancelled = False
+
+  def check_cancelled():
+    if cancel_event.is_set():
+      raise JobCancelled()
+
   try:
     processing_status[job_id]['status'] = 'processing'
     if demucs_model is None:
@@ -112,12 +153,14 @@ def demucs_separation(audio_data, job_id, original_ext):
       processing_status[job_id]['progress'] = 2
     if original_ext.lower() == 'mp4':
       processing_status[job_id]['original_video_path'] = temp_file
+    check_cancelled()
     # 3%: 音楽ファイルをサーバーに書き込み完了
     processing_status[job_id]['progress'] = 3
     # 4-5%: 音楽ファイル情報（Key、BPM、曲の長さ）取得中
     processing_status[job_id]['progress'] = 4
     info = get_audio_info(temp_file)  # Essentiaで音楽ファイルの情報（Key、BPM、曲の長さ）取得
     processing_status[job_id]['progress'] = 5
+    check_cancelled()
     # 6%: 音楽ファイル情報（Key、BPM、曲の長さ）取得完了
     processing_status[job_id]['progress'] = 6
     # 7-9%: 音楽ファイル読み込み、ステレオ・サンプルレート変換中
@@ -131,6 +174,7 @@ def demucs_separation(audio_data, job_id, original_ext):
       waveform = torchaudio.transforms.Resample(sr, demucs_model.samplerate)(waveform)
       sr = demucs_model.samplerate
     processing_status[job_id]['progress'] = 9
+    check_cancelled()
     # 10%: 音楽ファイル読み込み、ステレオ・サンプルレート変換完了
     processing_status[job_id]['progress'] = 10
     # 11-87%: 音楽ファイル分離処理中（progress_counterで処理）
@@ -138,7 +182,8 @@ def demucs_separation(audio_data, job_id, original_ext):
     progress_thread.start()
     waveform = normalize_audio(waveform, 1.0).to(device)
     with torch.no_grad():
-      sources = apply_model(demucs_model, waveform[None], device=device)[0]
+      sources = apply_model(demucs_model, waveform[None], device=device, pool=CancellablePool(cancel_event))[0]
+    check_cancelled()
     tracks = {}
     for i, name in enumerate(demucs_model.sources):
       buffer = io.BytesIO()
@@ -150,18 +195,25 @@ def demucs_separation(audio_data, job_id, original_ext):
     # 90%: 音楽ファイル分離処理完了
     processing_status[job_id]['progress'] = 90
     time.sleep(0.5)  # フロントエンドが90%を確実にキャッチできるように少し待つ
+    check_cancelled()
     processing_status[job_id].update({'status': 'completed', 'progress': 100, 'tracks': tracks, 'audio_info': info, 'sample_rate': sr})
+  except JobCancelled:
+    print(f"Job {job_id}: Cancelled")
+    cancelled = True
+    stop_event.set()
+    progress_thread and progress_thread.join(timeout=1)
+    # キャンセルされたジョブの結果は使われないので、記録ごと消す
+    processing_status.pop(job_id, None)
   except Exception as e:
     print(f"Job {job_id}: Error during separation: {str(e)}")
     stop_event.set()
     progress_thread and progress_thread.join(timeout=1)
     processing_status[job_id] = {'status': 'error', 'error': str(e), 'progress': 0}
   finally:
-    if temp_file and os.path.exists(temp_file) and original_ext.lower() != 'mp4':
-      try:
-        os.unlink(temp_file)
-      except Exception:
-        pass
+    cancel_events.pop(job_id, None)
+    # mp4 は「保存」で元の動画と合成するため一時ファイルを残すが、キャンセル時は不要なので消す
+    if original_ext.lower() != 'mp4' or cancelled:
+      remove_file(temp_file)
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -172,6 +224,7 @@ async def upload_file(file: UploadFile = File(...)):
     raise HTTPException(status_code=400, detail="Invalid file type")
   job_id = str(uuid.uuid4())
   processing_status[job_id] = {'filename': file.filename, 'status': 'processing', 'progress': 0, 'original_ext': ext}
+  cancel_events[job_id] = threading.Event()
   thread = threading.Thread(target=demucs_separation, args=(await file.read(), job_id, ext))
   thread.daemon = False
   thread.start()
@@ -286,6 +339,21 @@ def clear_job(job_id: str):
     del processing_status[job_id]
     return {'message': 'Job cleared'}
   raise HTTPException(status_code=404, detail="Job not found")
+
+@app.post("/cancel/{job_id}")
+def cancel_job(job_id: str):
+  if job_id not in processing_status:
+    raise HTTPException(status_code=404, detail="Job not found")
+  cancel_event = cancel_events.get(job_id)
+  if cancel_event is not None:
+    # 分離中：止まるまでの数秒間も /status で「キャンセル済み」と分かるようにしておく（後片付けは分離処理側で行う）
+    cancel_event.set()
+    processing_status[job_id]['status'] = 'cancelled'
+  else:
+    # 分離は終わっているが、結果のダウンロード前にキャンセルされた：結果は使われないので削除する
+    remove_file(processing_status[job_id].get('original_video_path'))
+    del processing_status[job_id]
+  return {'message': 'Job cancelled'}
 
 @app.on_event("startup")
 async def startup_event():
