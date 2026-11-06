@@ -4,8 +4,8 @@
 
 ## 1. 前提条件
 - Node.js 18 以上
-- Yarn 1.x（推奨）または npm（どちらか一方を使用してください）
-- バックエンド（Flask）は別ディレクトリ `../backend` にあります
+- Yarn 1.x（npm は使わない）
+- バックエンド（FastAPI）は別ディレクトリ `../backend` にあります
 
 ## 2. セットアップ
 まず必ずプロジェクトのルートからフロントエンドのディレクトリに移動してください（環境に依存しない相対パスの例）。
@@ -29,17 +29,10 @@ pwd  # 末尾が /music-separator/frontend になっていればOK（Windowsは 
 その上で、依存関係をインストールします。
 
 ```bash
-# 推奨: Yarn を使用
 yarn install
-
-# もし npm を使う場合（Yarn と混在させないでください）
-# rm -f yarn.lock
-# npm install
 ```
 
-混在防止のポイント:
-- npm を使う場合は `yarn.lock` を削除
-- Yarn を使う場合は `package-lock.json` を削除
+このプロジェクトは **Yarn に統一** している。`npm install` を実行すると `package-lock.json` が作られ、`yarn.lock` と食い違う原因になるため使わない（パッケージの追加は `yarn add`）。
 
 ## 3. 開発サーバーの起動
 
@@ -47,11 +40,7 @@ yarn install
 # まず frontend ディレクトリにいることを確認してください
 pwd  # .../music-separator/frontend が表示されていればOK
 
-# Yarn（推奨）
 yarn start
-
-# npm の場合
-# npm start
 ```
 
 起動後、ブラウザで `http://localhost:3000` を開きます。
@@ -84,9 +73,7 @@ yarn add axios
 yarn add -D @types/xxx
 ```
 
-npm の場合は `yarn` を `npm run` / `npm install` 系に読み替えてください。
-
-## 5. バックエンド（Flask）との連携
+## 5. バックエンド（FastAPI）との連携
 - デフォルトの API ベースURL は `http://localhost:7860` を想定しています。
 - 値は `src/config/api.ts` で変更できます。
 - バックエンドの起動方法は [`../backend/README.md`](../backend/README.md) を参照してください。
@@ -212,7 +199,7 @@ yarn deploy
 
 #### CORS エラー
 - バックエンドでCORSが正しく設定されているか確認
-- `backend/app.py` の `CORS(app, expose_headers=['Content-Disposition'])` を確認
+- `backend/app/main.py` の `CORSMiddleware` の設定（`allow_origins` / `expose_headers=["Content-Disposition"]`）を確認
 
 #### バックエンドに接続できない
 - `.env.production` のURLが正しいか確認
@@ -228,9 +215,8 @@ yarn deploy
 
 - 依存関係の不整合が起きた場合：
   ```bash
-  rm -rf node_modules yarn.lock package-lock.json
-  # どちらか一方だけで再インストール
-  yarn install  # もしくは npm install
+  rm -rf node_modules
+  yarn install
   ```
 - 型定義が見つからない： `yarn add -D @types/xxx` を追加
 - 画面が真っ白：ブラウザのDevTools（Console）でエラーを確認
