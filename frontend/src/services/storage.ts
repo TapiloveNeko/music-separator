@@ -11,7 +11,7 @@ const PENDING_JOB_KEY = 'music-separator:pendingJob';
 const CURRENT_SONG_KEY = 'music-separator:currentSongId';
 
 // ブラウザに保存できる曲数の上限。1曲あたり数百MBになり、端末の空き容量は Web ページから正確に知る方法がないため、曲数で制限する
-export const MAX_SONGS = 5;
+export const MAX_SONGS = 10;
 
 export type StoredSong = SavedSong;
 
